@@ -1,0 +1,52 @@
+<p align="center">
+  <img src="assets/icon-128.png" width="96" alt="顺手">
+</p>
+
+<h1 align="center">顺手 · 会看场合的网页工具</h1>
+
+<p align="center">划词进笔记，一键生成分享图，一个悬浮球搞定。</p>
+
+顺手是一个浏览器工具（Chrome 扩展 / 油猴脚本）：会看你正打开的是什么网页，把手边的动作换成合适的——
+豆瓣存书影游、B站收视频与评论、划词进虎鲸 / 思源笔记，需要时再变成一张干净的分享图。
+
+- **无账号、无服务器**：配置与密钥只保存在本机，内容直接写入你自己的笔记
+- **开箱即用**：GitHub / 豆瓣 / B站 等站点自带场景；其余网页有书签、摘录、任务
+- **可配置**：动作、匹配规则、提取字段、内容模板都能在配置台里调整，不用写代码
+
+## 安装
+
+### 浏览器扩展（Chrome / Edge）
+
+1. 到 [Releases](https://github.com/hqweay/shunshou/releases/latest) 下载最新的 `shunshou-extension-*.zip`
+2. 解压到任意目录（不要直接双击运行）
+3. 打开 `chrome://extensions` → 右上角开启「开发者模式」→「加载已解压的扩展程序」→ 选择解压目录
+
+> 当前通过 GitHub Releases 分发；Chrome 应用商店上架是后续计划。
+
+### 油猴脚本（Tampermonkey / Violentmonkey）
+
+[**安装 顺手.user.js**](https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js)
+
+脚本带 `updateURL`，安装后脚本管理器会提示后续更新。
+
+## 上手
+
+1. 打开任意网页：右下角会出现悬浮球；在 GitHub / 豆瓣 / B站 等页面会自动换成对应场景
+2. 点悬浮球展开动作；先用鼠标划选一段文字，动作会带上选中的内容
+3. 配置：扩展点浏览器工具栏的图标 → 「配置」；油猴点悬浮球面板里的「配置」
+4. 接笔记（可选）：
+   - **虎鲸**：MCP 端点 + Token + 仓库 ID
+   - **思源**：内核地址（默认 `http://127.0.0.1:6806`）+ API Token
+
+## 更新
+
+- **扩展**：下载最新 zip，重新「加载已解压的扩展程序」即可（配置会保留）
+- **油猴**：脚本管理器自动检查更新
+
+## 隐私
+
+顺手不收集、不上传任何数据；配置与密钥都在本机。详见 [隐私说明](PRIVACY.md)。
+
+## 反馈
+
+- [Issues](https://github.com/hqweay/shunshou/issues)：问题、建议，或想要的新站点
