@@ -6,6 +6,10 @@
 
 <p align="center">划词进笔记，一键生成分享图，一个悬浮球搞定。</p>
 
+<p align="center">
+  <img src="assets/screenshot-dock.png" alt="悬浮球展开后的动作面板">
+</p>
+
 顺手是一个浏览器扩展（Chrome / Edge）：会看你正打开的是什么网页，把手边的动作换成合适的——
 豆瓣存书影游、B站收视频与评论、划词进虎鲸 / 思源笔记，需要时再变成一张干净的分享图。
 
@@ -31,6 +35,18 @@
 4. 接笔记（可选）：
    - **虎鲸**：MCP 端点 + Token + 仓库 ID
    - **思源**：内核地址（默认 `http://127.0.0.1:6806`）+ API Token
+
+<p align="center">
+  <img src="assets/screenshot-studio.png" width="760" alt="配置台：场景与匹配规则">
+</p>
+
+## 分享图
+
+划选的摘录可以一键变成一张干净的卡片，默认复制到剪贴板，也可以下载：
+
+<p align="center">
+  <img src="assets/screenshot-card.png" width="360" alt="分享图卡片">
+</p>
 
 ## 更新
 
