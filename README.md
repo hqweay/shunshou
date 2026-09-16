@@ -9,6 +9,7 @@
 <p align="center">
   <a href="https://github.com/hqweay/shunshou/releases/latest"><img src="https://img.shields.io/github/v/release/hqweay/shunshou?label=%E6%9C%80%E6%96%B0%E7%89%88" alt="最新版本"></a>
   <a href="https://github.com/hqweay/shunshou/releases"><img src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Chrome%20%2F%20Edge-4285F4" alt="平台"></a>
+  <a href="https://shunshou.leay.net/"><img src="https://img.shields.io/badge/%E5%AE%98%E7%BD%91-shunshou.leay.net-0969da" alt="官网"></a>
 </p>
 
 <p align="center">
