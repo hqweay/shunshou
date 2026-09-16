@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instagram Image Downloader: Save a Post's Originals · Shunshou</title>
+<meta name="description" content="Open an Instagram post, click once and the whole carousel's originals come back — preview, copy or download them all. Fetched in your browser, no extra login.">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-instagram.en.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-instagram.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-instagram.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-instagram.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Shunshou">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-instagram.en.html">
+<meta property="og:title" content="Instagram Image Downloader: Save a Post's Originals in One Click">
+<meta property="og:description" content="The whole carousel back in one click — preview, copy, or download all of it. Fetched in your browser, no third-party downloader, no pasting the link anywhere.">
+<meta property="og:image" content="https://shunshou.leay.net/assets/instagram/download-result.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Instagram Image Downloader: Save a Post's Originals in One Click",
+      "url": "https://shunshou.leay.net/use-case-instagram.en.html",
+      "inLanguage": "en",
+      "isPartOf": { "@type": "WebSite", "name": "Shunshou", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Are my images uploaded to your server?", "acceptedAnswer": { "@type": "Answer", "text": "No. Shunshou has no server: images are fetched in your browser (the extension requests them from its local background script; the userscript uses its script manager's request capability). Nothing is uploaded, nothing is relayed." } },
+        { "@type": "Question", "name": "Do I need to log in to Instagram?", "acceptedAnswer": { "@type": "Answer", "text": "No extra login. The action reads the post's public data (the post page and the official embed page), and uses whatever state your browser is already in." } },
+        { "@type": "Question", "name": "Can it download videos or Reels?", "acceptedAnswer": { "@type": "Answer", "text": "For now it can only fetch a Reel's cover image; the video itself is not part of this step. That boundary is written here on purpose, so you don't install it for the wrong reason." } },
+        { "@type": "Question", "name": "How many images at once, and what if some are missing?", "acceptedAnswer": { "@type": "Answer", "text": "Up to 20 images per post; duplicate links are removed. Any single image over about 7 MB is skipped, and the result tells you how many failed." } },
+        { "@type": "Question", "name": "Where do the downloaded files go?", "acceptedAnswer": { "@type": "Answer", "text": "Nothing is saved by default: images stay in the result dialog until you click Download all (N), which writes them to your browser's own download folder (default filename: username-date)." } },
+        { "@type": "Question", "name": "Does it work on mobile?", "acceptedAnswer": { "@type": "Answer", "text": "The extension is desktop-only; on mobile you'd install the userscript. Instagram keeps pushing you into its app on mobile browsers, though, so this action is more comfortable on a computer." } },
+        { "@type": "Question", "name": "Does it cost anything? Do I need an account?", "acceptedAnswer": { "@type": "Answer", "text": "It's free, with no ads and no paid features, and no account to register. Your setup lives only in your own browser." } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics (GA4): counts landing-page visits only; the extension / userscript itself has no analytics (see PRIVACY.md) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 26ch; font-size: clamp(1.9rem, 5.2vw, 3rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 68ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .hero .shot { margin-top: 46px; }
+
+  /* Hero triptych: source images differ wildly in aspect (a tweet is wide, a
+     Xiaohongshu note is tall), so cap the height and use object-fit: contain
+     rather than letting the tallest one push the hero past a full screen. */
+  .hero-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 46px; align-items: end; }
+  @media (max-width: 820px) { .hero-gallery { grid-template-columns: 1fr; gap: 26px; } }
+  .hero-gallery figure { margin: 0; }
+  .hero-gallery img {
+    width: 100%; max-height: 320px; object-fit: contain;
+    border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); background: var(--surface);
+  }
+  @media (max-width: 820px) { .hero-gallery img { max-height: 420px; } }
+  .hero-gallery figcaption { margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 70ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+  .section .sub b { color: var(--fg-soft); }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+
+  /* ── Gallery ────────────────────────────── */
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 44px; align-items: start; }
+  @media (max-width: 900px) { .gallery { grid-template-columns: 1fr; gap: 34px; } }
+  .gallery figure { margin: 0; }
+  .gallery img {
+    width: 100%; border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); background: var(--surface);
+  }
+  .gallery figcaption { margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+  .gallery figcaption b { display: block; color: var(--fg); font-size: 14.5px; margin-bottom: 3px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 80ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 92px 0 84px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 50ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.en.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>Shunshou</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.en.html">Home</a>
+      <a class="nav-link" href="./use-case-siyuan.en.html">SiYuan use case</a>
+      <a class="nav-link" href="./use-case-orca.en.html">Orca Note use case</a>
+      <a class="nav-link" href="./use-case-share-cards.en.html">Share images use case</a>
+      <a class="nav-link" href="./use-case-obsidian.en.html">Obsidian use case</a>
+      <a class="nav-lang" href="./use-case-instagram.html" hreflang="zh-CN">中文</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>Use case · Instagram image download</p>
+        <h1>Every original image in an Instagram post, in one click</h1>
+        <p class="lede">
+          Saving one image today means opening the carousel, right-clicking, saving, renaming — and doing it ten times for ten images.
+          Shunshou compresses that into one step: open the post, click <b>Download Instagram images</b>, and the whole carousel comes
+          back at once. Preview each one, copy it, or hit <b>Download all (N)</b>. Images are fetched <b>in your own browser</b> —
+          no third-party download site, and no pasting the post link to anyone.
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+          </a>
+          <a class="btn btn--ghost" href="#install">Other ways to install</a>
+        </div>
+        <p class="note"><b>Whole carousel</b> · <b>Preview before saving</b> · <b>Fetched locally</b></p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot__bar"><i></i><i></i><i></i><span>The panel on a post page, plus the result dialog: preview one by one, save the whole set</span></div>
+        <img src="assets/instagram/download-result.webp" width="2236" height="1480" alt="The Download Instagram images result dialog on an Instagram post page: image 1 of 6 is previewed in the middle, with Copy this image, Download this image and Download all (6) buttons below it">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section class="section" id="why">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Why it's a chore</p>
+        <h2>Saving one image runs into six walls</h2>
+        <p class="sub">
+          The task itself is trivial. What makes it annoying is that every route leaves something behind: the wrong size,
+          a pile of repeated clicks, or handing the link to someone else.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">⇲</span>
+          <h3>Right-click saves a thumbnail</h3>
+          <p>Save image as usually gets you a compressed, smaller version that turns to mush when enlarged. The full-size URL was already loaded by the page — it just never reaches your hands.</p>
+        </article>
+        <article class="card">
+          <span class="mark">▤</span>
+          <h3>Ten images, ten rounds</h3>
+          <p>Open one, right-click, save, rename — then do it again. Miss one and you get to hunt for it.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⛔</span>
+          <h3>Download sites want your link</h3>
+          <p>Paste the post URL into a site you don't know: ads, countdown timers, and sometimes your images are uploaded to their server first before you get them back.</p>
+        </article>
+        <article class="card">
+          <span class="mark">◫</span>
+          <h3>You want the original, not a re-layout</h3>
+          <p>A share image rearranges the post into a card. Here you want <b>the image itself</b> — unchanged, ready to use as material, reference or archive.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⌘</span>
+          <h3>Caption, author and date come along</h3>
+          <p>Save the pictures and the source is gone: who posted it, when, and what the caption said. Finding the post again means searching from memory.</p>
+        </article>
+        <article class="card">
+          <span class="mark">␡</span>
+          <h3>Good luck finding them later</h3>
+          <p>Files land as hash strings, mixed into your downloads folder, with no way to tell which post they belong to.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How -->
+  <section class="section section--soft" id="how">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">How it works</p>
+        <h2>Downloading Instagram images takes three steps</h2>
+        <p class="sub">
+          No connection to configure, no account, no extra Instagram login. The action follows the post page — it only shows up
+          on <code>/p/…</code> and <code>/reel/…</code> URLs.
+        </p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>1. Open the post page</h3>
+          <p>Any post or Reels page on instagram.com. Whatever login state your browser is already in is what gets used — you're not asked to sign in.</p>
+        </article>
+        <article class="step">
+          <h3>2. Click "Download Instagram images"</h3>
+          <p>The action first pulls the post's <b>complete image list</b>, so a carousel gives you more than the one image you happen to be looking at.</p>
+        </article>
+        <article class="step">
+          <h3>3. Pick in the dialog</h3>
+          <p>Preview one by one: <b>Copy this image</b> pastes straight into a chat or document, <b>Download this image</b> saves one, <b>Download all (N)</b> saves the set. Nothing is written to disk by default.</p>
+        </article>
+      </div>
+
+      <figure class="shot" style="max-width:360px;margin:38px auto 0">
+        <div class="shot__bar"><i></i><i></i><i></i><span>On a phone (userscript): same action, same dialog</span></div>
+        <img src="assets/instagram/mobile-result.webp" width="608" height="1316" alt="An Instagram post page in a phone browser with the Download Instagram images dialog open: image 1 of 6 previewed, with Copy this image, Download this image and Download all (6) buttons plus Close">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section class="section" id="download">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">What the action does</p>
+        <h2>Originals, the whole set, previewed before saving</h2>
+        <p class="sub">
+          In one sentence: it turns "the images in this post" into a set you can preview, copy and download — and the decisions stay yours.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">⇉</span>
+          <h3>An Instagram carousel, fetched in one pass</h3>
+          <p>Carousel images are <b>completed automatically</b> (the page itself only mounts the current few; the action fetches the post's full list). Up to 20 images per post.</p>
+        </article>
+        <article class="card">
+          <span class="mark">◆</span>
+          <h3>Originals, not thumbnails</h3>
+          <p>It uses the large image URL the page itself already loaded — no re-compression, no watermark, no resizing.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⛨</span>
+          <h3>No third party in the middle</h3>
+          <p>Fetching happens <b>in your own browser</b>: there is no server of ours, images are not uploaded or relayed, and no download site gets your link.</p>
+        </article>
+        <article class="card">
+          <span class="mark">👁</span>
+          <h3>Look first, then save</h3>
+          <p>Images stay in the result dialog. <b>Nothing is written to disk unless you click download</b>, and nothing is filed away behind your back.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⧉</span>
+          <h3>Copying is often faster</h3>
+          <p>Most of the time you just want it in a chat, a doc or a note — "Copy this image" skips the whole save-then-find-the-file round trip.</p>
+        </article>
+        <article class="card">
+          <span class="mark">🏷</span>
+          <h3>Filenames you can read</h3>
+          <p>The default name is <b>username-date</b>, not a hash — so a folder of downloads still tells you which post each image came from.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Share -->
+  <section class="section section--soft" id="share">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">The other exit from the same post</p>
+        <h2>If what you want is a good-looking card, that exists too</h2>
+        <p class="sub">
+          Downloading originals and making a share image are <b>two different exits</b>, both built on the same extracted data:
+          one hands you the files, the other rearranges the post into a card — author, images, caption and date in place,
+          with a QR code in the corner that leads back to the post.
+        </p>
+      </div>
+
+      <div class="gallery">
+        <figure>
+          <img src="assets/instagram/share-gallery.webp" width="1000" height="1913" alt="A real share image: the author's name and username on top, seven illustrations laid out as a photo wall, and the date, like count and post link below with a QR code in the corner">
+          <figcaption><b>A carousel post (7 images)</b> images completed automatically and laid out as a wall, with author, date, like count and the original link on the card; the QR code scans back to the post.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/instagram/share-single.webp" width="1000" height="1563" alt="A real share image: the author and username on top, a single painting in the middle, and the date, like count and post link below with a QR code in the corner">
+          <figcaption><b>A single-image post</b> one image makes a card just as well: same layout, the photo wall simply becomes one image.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/share/instagram-post.webp" width="1080" height="1226" alt="A share image card made from an Instagram post: author and username, the post image, date and like count, post link, and a QR code in the corner">
+          <figcaption><b>Themes and sizes</b> four themes and four sizes to pick per piece, watermark and QR code editable, and your tweaks can be saved back onto the action. See the <a href="./use-case-share-cards.en.html" style="color:var(--accent)">share images use case</a>.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">FAQ</p>
+        <h2>Questions about downloading Instagram images</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Are my images uploaded to your server?</summary>
+          <div class="answer">
+            <p>No. Shunshou <b>has no server</b>: images are fetched in your browser (the extension requests them from its local background script; the userscript uses its script manager's request capability). Nothing is uploaded, nothing is relayed.</p>
+            <p>The only outbound traffic is to instagram.com, to fetch this post's page and its images.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Do I need to log in to Instagram?</summary>
+          <div class="answer">
+            <p>No extra login. The action reads the post's public data (the post page and the official embed page), and uses whatever state your browser is already in.</p>
+            <p>It does <b>not bypass login walls and does not touch private accounts</b>: if it can't get the data it says so plainly, rather than guessing or impersonating you.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can it download videos or Reels?</summary>
+          <div class="answer">
+            <p>For now it can only fetch <b>a Reel's cover image</b>; the video itself is not part of this step. That boundary is written here on purpose, so you don't install it for the wrong reason.</p>
+          </div>
+        </details>
+        <details>
+          <summary>How many images at once, and what if some are missing?</summary>
+          <div class="answer">
+            <p>Up to 20 images per post; duplicate links are removed. Any single image over about 7 MB is skipped, and the result tells you how many failed.</p>
+            <p>Failures are counted separately rather than reported as success — open the run details to see which step it stopped at.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Where do the downloaded files go?</summary>
+          <div class="answer">
+            <p>Nothing is saved by default: images stay in the result dialog until you click <b>Download all (N)</b>, which writes them to your browser's own download folder (default filename: username-date).</p>
+            <p>If you'd rather not touch the disk at all, "Copy this image" gets the image just as well.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does it work on mobile?</summary>
+          <div class="answer">
+            <p>The extension is desktop-only; on mobile you'd install the userscript. Instagram keeps pushing you into its app on mobile browsers, though, so this action is more comfortable on a computer.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does it cost anything? Do I need an account?</summary>
+          <div class="answer">
+            <p>It's free, with no ads and no paid features, and no account to register. Your setup lives only in your own browser.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section section--soft" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Install</p>
+        <h2>Pick one way to install</h2>
+        <p class="sub">Both store installs update themselves; the userscript suits mobile or browsers where you'd rather not add an extension.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome Web Store</h3>
+          <p>Best on desktop, updates itself once installed.</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">Install from the Chrome Web Store →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge Add-ons</h3>
+          <p>Same engine as Chrome, same features.</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">Install from Edge Add-ons →</a></p>
+        </article>
+        <article class="step">
+          <h3>Userscript (works on mobile)</h3>
+          <p>Install a script manager first (Tampermonkey / Violentmonkey; Firefox on Android, Safari + Userscripts on iOS), then the script.</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">Install shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Manual</span>
+        <p>
+          To load the zip yourself (or if the stores aren't an option): download <code>shunshou-extension-*.zip</code> from
+          <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>,
+          unzip it, then open <kbd>chrome://extensions</kbd>, turn on Developer mode and choose "Load unpacked".
+          The full walkthrough is on the <a href="./index.en.html#install" style="color:var(--accent)">home page's install section</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="Shunshou">
+      <h2>Saved is yours</h2>
+      <p class="tagline">Install it and go — nothing to configure.</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from Edge Add-ons
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install the userscript (mobile)
+        </a>
+      </div>
+      <p class="more">Or <a href="https://github.com/hqweay/shunshou/releases/latest">download the zip</a>, or see <a href="./index.en.html#install">every install option</a>.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Shunshou · Context-Aware Web Toolbox</span>
+    <a href="./index.en.html">Home</a>
+    <a href="./use-case-siyuan.en.html">SiYuan use case</a>
+    <a href="./use-case-orca.en.html">Orca Note use case</a>
+    <a href="./use-case-share-cards.en.html">Share images use case</a>
+    <a href="./use-case-obsidian.en.html">Obsidian use case</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.en.md" target="_blank" rel="noopener">Privacy Policy</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">Feedback</a>
+    <span class="push">Author: 养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>

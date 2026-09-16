@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>推文 / 小红书 / Instagram 转分享图卡片，一键出图 · 顺手</title>
+<meta name="description" content="把推文、小红书笔记、Instagram 帖子变成一张干净的分享图：图片自动补全、四种主题四种尺寸、超长自动分页不截断、右下角带原文二维码。不用截图拼图、不用 P 图，复制即发。">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-share-cards.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-share-cards.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-share-cards.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-share-cards.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="顺手">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-share-cards.html">
+<meta property="og:title" content="推文 / 小红书 / Instagram 转分享图卡片，一键出图">
+<meta property="og:description" content="网页、推文、笔记一键变成干净的分享图：图片自动补全、主题尺寸可换、超长自动分页、带原文二维码。">
+<meta property="og:image" content="https://shunshou.leay.net/assets/share/xiaohongshu-note.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "推文 / 小红书 / Instagram 转分享图卡片，一键出图",
+      "url": "https://shunshou.leay.net/use-case-share-cards.html",
+      "inLanguage": "zh-CN",
+      "isPartOf": { "@type": "WebSite", "name": "顺手", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "它和截图有什么区别？", "acceptedAnswer": { "@type": "Answer", "text": "截图把页面的导航、按钮、推荐位一起截进去，还得自己裁；分享图只留内容——作者、正文、配图、日期，按卡片版式重排，尺寸固定、边距一致，发出去不会被平台再压一次。" } },
+        { "@type": "Question", "name": "小红书和 Instagram 的图片能全部带出来吗？", "acceptedAnswer": { "@type": "Answer", "text": "能。轮播图的图片会自动补全（不用一张张点开），排成图片墙；推文则带上作者、日期、正文与配图。图片是页面自己加载的，不会绕过登录或去抓私有内容。" } },
+        { "@type": "Question", "name": "太长的文章怎么办？会被截断吗？", "acceptedAnswer": { "@type": "Answer", "text": "不会。打开「超长分页」后，正文超过单张上限会自动切成多张图片，续页带标题与页码，不截断长文。" } },
+        { "@type": "Question", "name": "做出来的图能直接用吗？", "acceptedAnswer": { "@type": "Answer", "text": "能。出图后留在结果弹窗里，点一下复制图片，直接粘进微信、群聊或文档；也可以下载文件、保存到本地。不想要二维码可以关掉，也能换成「扫码下载顺手」。" } },
+        { "@type": "Question", "name": "需要配置什么吗？", "acceptedAnswer": { "@type": "Answer", "text": "不需要。分享图零配置，不依赖任何账号、连接或 API：装好就能用，也不需要联网（二维码在本地生成）。" } },
+        { "@type": "Question", "name": "能在图上加水印或自己的署名吗？", "acceptedAnswer": { "@type": "Answer", "text": "可以。水印文字、背景色、字体都能改；四种主题（纸感 / 墨感 / 品牌 / 纯白）与四种尺寸（长图 / 4:5 / 3:4 / 1:1）随内容选，改完还能存回动作当默认。" } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics（GA4）：只统计落地页访问量；扩展 / 油猴脚本本体不含统计（口径见 PRIVACY.md） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 24ch; font-size: clamp(1.9rem, 5.2vw, 3rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 66ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .hero .shot { margin-top: 46px; }
+
+  /* 首屏三连出图：不同平台的原图比例差很大（推文宽、小红书高），
+     所以统一限高 + object-fit: contain，不让最高那张把首屏撑成一屏。 */
+  .hero-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 46px; align-items: end; }
+  @media (max-width: 820px) { .hero-gallery { grid-template-columns: 1fr; gap: 26px; } }
+  .hero-gallery figure { margin: 0; }
+  .hero-gallery img {
+    width: 100%; max-height: 320px; object-fit: contain;
+    border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); background: var(--surface);
+  }
+  @media (max-width: 820px) { .hero-gallery img { max-height: 420px; } }
+  .hero-gallery figcaption { margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 68ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+  .section .sub b { color: var(--fg-soft); }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+
+  /* ── 图样画廊 ───────────────────────────── */
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 44px; align-items: start; }
+  @media (max-width: 900px) { .gallery { grid-template-columns: 1fr; gap: 34px; } }
+  .gallery figure { margin: 0; }
+  .gallery img {
+    width: 100%; border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); background: var(--surface);
+  }
+  .gallery figcaption { margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+  .gallery figcaption b { display: block; color: var(--fg); font-size: 14.5px; margin-bottom: 3px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 78ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 92px 0 84px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 48ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>顺手</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.html">产品主页</a>
+      <a class="nav-link" href="./use-case-siyuan.html">思源笔记用例</a>
+      <a class="nav-link" href="./use-case-orca.html">虎鲸笔记用例</a>
+      <a class="nav-link" href="./use-case-obsidian.html">Obsidian 用例</a>
+      <a class="nav-link" href="./use-case-instagram.html">Instagram 用例</a>
+      <a class="nav-lang" href="./use-case-share-cards.en.html" hreflang="en">EN</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- 首屏 -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>用例 · 分享图卡片</p>
+        <h1>推文、小红书、Instagram，一键变成分享图</h1>
+        <p class="lede">
+          看到一条好内容想转发，截图要自己裁、还带着页面的按钮和推荐位；手动拼图更麻烦。
+          顺手把这一页直接<b>排成一张干净的卡片</b>——作者、正文、配图、日期各归其位，
+          右下角带一个能扫回原文的二维码。<b>点一下出图，复制就能发</b>。
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            从 Chrome 商店安装
+          </a>
+          <a class="btn btn--ghost" href="#install">其他安装方式</a>
+        </div>
+        <p class="note"><b>零配置</b> · <b>不联网也能出图</b> · 不需要账号与 API</p>
+      </div>
+
+      <div class="hero-gallery">
+        <figure>
+          <img src="assets/share/x-post.webp" width="1080" height="709" alt="推文生成的分享图卡片：顶部是作者与用户名，中间是推文正文，下方一行是日期与推文链接，右下角有二维码">
+          <figcaption>X（推特）推文</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/share/xiaohongshu-note.webp" width="1080" height="1510" alt="小红书笔记生成的分享图卡片：作者昵称、笔记配图、日期与点赞收藏数、笔记链接，右下角二维码">
+          <figcaption>小红书笔记</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/share/instagram-post.webp" width="1080" height="1226" alt="Instagram 帖子生成的分享图卡片：作者与用户名、帖子图片、日期与点赞数、帖子链接，右下角二维码">
+          <figcaption>Instagram 帖子</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 为什么 -->
+  <section class="section" id="why">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">为什么不用截图</p>
+        <h2>截图截的是「屏幕」，分享图给的是「内容」</h2>
+        <p class="sub">
+          截图快，但发出去的东西是别人网页的一部分：导航栏、点赞按钮、旁边的推荐位都在里面，
+          还得自己裁掉；裁完尺寸不统一，发到不同平台再被压一次。
+        </p>
+        <p class="sub">
+          分享图是把这一页的<b>内容重新排一遍</b>：谁写的、说了什么、配了什么图、什么时候发的——
+          固定尺寸、统一边距，发出去就是一张成品。
+        </p>
+        <p class="sub">
+          上面三张不是三个功能，而是<b>同一个「分享图」能力</b>在三个站点上取各自字段的结果——
+          所以新站点不用等适配：给它几个字段，它就能出图。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">✂</span>
+          <h3>不用裁、不用拼</h3>
+          <p>卡片版式是排好的：作者在顶、正文居中、图片按比例、元信息在底。你不用对齐、不用留白、不用调字号。</p>
+        </article>
+        <article class="card">
+          <span class="mark">▣</span>
+          <h3>图片自动补全</h3>
+          <p>小红书笔记与 Instagram 帖子的<b>轮播图会自动补全</b>（不用一张张点开），排成图片墙；推文带上作者、日期、正文与配图。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⇥</span>
+          <h3>超长不截断</h3>
+          <p>打开「超长分页」，正文超过单张上限就自动切成多张，续页带标题与页码——长文也能完整发出去。</p>
+        </article>
+        <article class="card">
+          <span class="mark">◇</span>
+          <h3>带得回原文</h3>
+          <p>右下角一个二维码，扫码打开原页面；也可以换成「扫码下载顺手」。二维码<b>在本地生成</b>，不联网、不上传。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⚙</span>
+          <h3>零配置，不需要连接</h3>
+          <p>不像存笔记要配后端，分享图<b>装好就能用</b>：不依赖账号、不依赖 API、不依赖网络。</p>
+        </article>
+        <article class="card">
+          <span class="mark">↻</span>
+          <h3>看完再决定</h3>
+          <p>出图后先留在结果弹窗里预览，满意再复制 / 下载；<b>不会自动往你磁盘里塞文件</b>，也不会替你发出去。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 图样 -->
+  <section class="section section--soft" id="gallery">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">出图效果</p>
+        <h2>三个平台，各来一张</h2>
+        <p class="sub">
+          下面都是真机出的图（未修图）。同一个动作在三个站点上分别取各自的字段，版式一致、内容按站点走。
+        </p>
+      </div>
+
+      <div class="gallery">
+        <figure>
+          <img src="assets/share/x-post.webp" width="1080" height="709" alt="推文生成的分享图卡片：顶部是作者与用户名，中间是推文正文，下方一行是日期与推文链接，右下角有二维码">
+          <figcaption><b>X（推特）推文</b>作者与用户名在顶，正文居中，日期与推文链接在底。作者自串（thread）也能整串出图。</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/share/xiaohongshu-note.webp" width="1080" height="1510" alt="小红书笔记生成的分享图卡片：作者昵称、笔记配图、日期与点赞收藏数、笔记链接，右下角二维码">
+          <figcaption><b>小红书笔记</b>轮播图自动补全后排成图片墙，标题 / 正文 / 话题标签都可放进卡片，赞与收藏数一并带上。</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/share/instagram-post.webp" width="1080" height="1226" alt="Instagram 帖子生成的分享图卡片：作者与用户名、帖子图片、日期与点赞数、帖子链接，右下角二维码">
+          <figcaption><b>Instagram 帖子</b>帖子图片自动补全（含轮播），可带作者、日期与点赞数；版式与其它站点完全一致。</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 怎么调 -->
+  <section class="section" id="tune">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">出图即工作台</p>
+        <h2>不满意就地改，改完存回动作</h2>
+        <p class="sub">
+          出图之后弹窗里就是预览：图太长看不清就点开大图；想换样子，展开「调整」直接改，
+          <b>改的是这一次</b>，满意了再「保存到动作」当默认。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">🎨</span>
+          <h3>四种主题</h3>
+          <p><b>纸感 / 墨感 / 品牌 / 纯白</b>——从暖纸到纯白，深浅两套配色都跟着系统切换。</p>
+        </article>
+        <article class="card">
+          <span class="mark">▭</span>
+          <h3>四种尺寸</h3>
+          <p><b>长图（自动高度）/ 4:5 / 3:4 / 1:1</b>——发朋友圈、发小红书、做封面各取所需；长图会尽量完整装下正文。</p>
+        </article>
+        <article class="card">
+          <span class="mark">🖋</span>
+          <h3>字体与背景色</h3>
+          <p>字体只使用你本机已装的（不联网下载），也可直接填任意 CSS font-family；背景色自定义时，文字与二维码会自动配成深 / 浅色。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⌗</span>
+          <h3>卡片内容可增删排序</h3>
+          <p>卡片由若干块组成，每块是一个模板（可引用任何变量）：不想要日期就删掉，想把评分放前面就拖上去。</p>
+        </article>
+        <article class="card">
+          <span class="mark">✎</span>
+          <h3>这次改内容</h3>
+          <p>「分享全文」还能就地改这一次的正文——<b>只影响本次，不落配置</b>；确认满意了再存回动作。</p>
+        </article>
+        <article class="card">
+          <span class="mark">✍</span>
+          <h3>水印与署名</h3>
+          <p>默认不显示文字；想加署名就在水印里填。二维码三档：当前页面 / 品牌主页 / 关闭。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 高亮 -->
+  <section class="section section--soft" id="highlight">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">和标注搭起来</p>
+        <h2>划选、高亮，也能直接出图</h2>
+        <p class="sub">
+          不一定非得整页。看到一句想发的话，划选它——浮条上的「分享摘录」出的就是<b>这一段</b>的卡片。
+          读到一半先标下来，最后一起处理也行。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">✂</span>
+          <h3>划选 → 摘录卡片</h3>
+          <p>选中一段话，点「分享摘录」：卡片就是这段话 + 来源，适合把书里、文章里的一句发出去。</p>
+        </article>
+        <article class="card">
+          <span class="mark">✎</span>
+          <h3>网页高亮</h3>
+          <p>划选点「<b>高亮</b>」，标注就留在页面上——<b>刷新、重开都还在</b>，而且不改动网页本身的结构。</p>
+          <p>再点一下可以复制这一条 / 取消（取消了还能撤销）；本页高亮能一次复制成文本，或存进笔记。</p>
+        </article>
+        <article class="card">
+          <span class="mark">✦</span>
+          <h3>先让 AI 摘一句</h3>
+          <p>「AI 摘要卡片」先用你自己的模型把这段或这页摘成要点，再排成卡片——同一套版式，内容换成摘要。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⇥</span>
+          <h3>发出去 / 发回笔记</h3>
+          <p>出图之后可以接着做别的：<b>复制图片</b>贴进微信，<b>保存文件</b>，或者接一步「发推文」打开官方分享框预填——发布前永远由你确认。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 其他用法 -->
+  <section class="section" id="scenes">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">还有这些用法</p>
+        <h2>不止是社交平台</h2>
+        <p class="sub">分享图是个通用能力：任何能取到字段的页面都能出图。</p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <h3>整页长图</h3>
+          <p>「分享全文」把整页正文与图片<b>按阅读顺序</b>排成卡片，超长自动分成多张、不截断——比滚动截屏干净得多，也不会把悬浮广告截进去。</p>
+        </article>
+        <article class="card">
+          <h3>书影游卡片</h3>
+          <p>豆瓣的书 / 影 / 游页各自解析出 17 / 20 / 11 个字段，可以出一张书目卡或影评卡；配上评分、封面、导演，比截图好看。</p>
+        </article>
+        <article class="card">
+          <h3>GitHub 仓库卡</h3>
+          <p>复制 <code>owner/repo</code>，或把仓库信息出一张卡片，适合在群里推荐一个项目。</p>
+        </article>
+        <article class="card">
+          <h3>B 站视频卡</h3>
+          <p>视频信息、评论（含楼中楼）都能取；分享卡片适合发在群里而不是贴一条链接。</p>
+        </article>
+        <article class="card">
+          <h3>保存成本地文件</h3>
+          <p>出的图可以直接保存到本地（文件名模板可配，如 <code>顺手/{{date:YYYY-MM-DD}}/{{title}}</code>），同名自动编号不覆盖。</p>
+        </article>
+        <article class="card">
+          <h3>发到多个平台</h3>
+          <p>X / 微博 / Bluesky / Telegram / Mastodon / Reddit——打开对方的官方分享框并预填内容，<b>发布前由你在编辑框里确认</b>。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section--soft" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">常见问题</p>
+        <h2>关于分享图，你可能想问的</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>它和截图有什么区别？</summary>
+          <div class="answer">
+            <p>截图把页面的导航、按钮、推荐位一起截进去，还得自己裁；分享图只留内容——作者、正文、配图、日期，按卡片版式重排，尺寸固定、边距一致，发出去不会被平台再压一次。</p>
+            <p>另外截图是位图截屏，换主题 / 换尺寸都得重截；分享图改参数就地重绘。</p>
+          </div>
+        </details>
+        <details>
+          <summary>小红书和 Instagram 的图片能全部带出来吗？</summary>
+          <div class="answer">
+            <p>能。轮播图的图片会<b>自动补全</b>（不用一张张点开），排成图片墙；推文则带上作者、日期、正文与配图。</p>
+            <p>取的是页面自己已经加载的图片，<b>不会绕过登录、也不会去抓私有内容</b>。</p>
+          </div>
+        </details>
+        <details>
+          <summary>太长的文章怎么办？会被截断吗？</summary>
+          <div class="answer">
+            <p>不会。打开「超长分页」后，正文超过单张上限会自动切成多张图片，<b>续页带标题与页码</b>，不截断长文。</p>
+            <p>不打开分页时，长图（自动高度）本身也能装下很长的正文（约 7000 字量级），超出才会按内容截断并加省略号。</p>
+          </div>
+        </details>
+        <details>
+          <summary>做出来的图能直接用吗？</summary>
+          <div class="answer">
+            <p>能。出图后留在结果弹窗里，点一下<b>复制图片</b>，直接粘进微信、群聊或文档；也可以下载文件、保存到本地。</p>
+            <p>不想要二维码可以关掉，也能换成「扫码下载顺手」。<b>「复制」就是复制</b>——不会顺手往你磁盘里塞文件。</p>
+          </div>
+        </details>
+        <details>
+          <summary>需要配置什么吗？</summary>
+          <div class="answer">
+            <p>不需要。分享图<b>零配置</b>，不依赖任何账号、连接或 API：装好就能用，也不需要联网（二维码在本地生成，图片取的是页面已加载的内容）。</p>
+          </div>
+        </details>
+        <details>
+          <summary>能在图上加水印或自己的署名吗？</summary>
+          <div class="answer">
+            <p>可以。水印文字、背景色、字体都能改；四种主题（纸感 / 墨感 / 品牌 / 纯白）与四种尺寸（长图 / 4:5 / 3:4 / 1:1）随内容选，改完还能存回动作当默认。</p>
+          </div>
+        </details>
+        <details>
+          <summary>收费吗？要注册账号吗？</summary>
+          <div class="answer">
+            <p>免费使用，没有广告，也没有需要付费解锁的功能；不需要注册任何账号。配置只存在你的浏览器里。</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 安装 -->
+  <section class="section" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">安装</p>
+        <h2>选一种装上就行</h2>
+        <p class="sub">商店装的两家都会自动更新；油猴脚本适合手机或不想装扩展的场景。</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome 商店</h3>
+          <p>桌面首选，装好即自动更新。</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">去 Chrome 商店安装 →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge 商店</h3>
+          <p>与 Chrome 同一内核，功能一致。</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">去 Edge 商店安装 →</a></p>
+        </article>
+        <article class="step">
+          <h3>油猴脚本（手机可用）</h3>
+          <p>先装脚本管理器（Tampermonkey / Violentmonkey；Android 用 Firefox，iOS 用 Safari + Userscripts），再装脚本。</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">安装 shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">手动</span>
+        <p>
+          想用 zip 手动加载（或商店装不上）：到 <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>
+          下载 <code>shunshou-extension-*.zip</code> 解压，然后在 <kbd>chrome://extensions</kbd> 打开「开发者模式」→「加载已解压的扩展程序」选中该目录。
+          完整步骤见<a href="./index.html#install" style="color:var(--accent)">产品主页的安装说明</a>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 收尾 -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="顺手">
+      <h2>好内容，值得一张好图</h2>
+      <p class="tagline">装好就能用，不用配任何东西。</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Chrome 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Edge 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          安装油猴脚本（手机可用）
+        </a>
+      </div>
+      <p class="more">也可以 <a href="https://github.com/hqweay/shunshou/releases/latest">下载 zip 手动加载</a>，或<a href="./index.html#install">看全部安装方式</a>。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>顺手 · 会看场合的网页工具</span>
+    <a href="./index.html">产品主页</a>
+    <a href="./use-case-siyuan.html">思源笔记用例</a>
+    <a href="./use-case-orca.html">虎鲸笔记用例</a>
+    <a href="./use-case-obsidian.html">Obsidian 用例</a>
+    <a href="./use-case-instagram.html">Instagram 用例</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.md" target="_blank" rel="noopener">隐私说明</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">反馈</a>
+    <span class="push">作者：养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>

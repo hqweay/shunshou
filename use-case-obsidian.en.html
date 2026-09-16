@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clip Web Pages into Obsidian: One Click into Your Vault · Shunshou</title>
+<meta name="description" content="Save a web article into your Obsidian vault in one click: an obsidian:// deep link hands it to Obsidian locally, no server involved. Paths support subfolders and dates.">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-obsidian.en.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-obsidian.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-obsidian.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-obsidian.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Shunshou">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-obsidian.en.html">
+<meta property="og:title" content="Clip Web Pages into Obsidian: One Click into Your Vault">
+<meta property="og:description" content="An obsidian:// deep link writes the article into your vault, no server involved; paths support subfolders and dates.">
+<meta property="og:image" content="https://shunshou.leay.net/assets/obsidian/panel.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Clip Web Pages into Obsidian: One Click into Your Vault",
+      "url": "https://shunshou.leay.net/use-case-obsidian.en.html",
+      "inLanguage": "en",
+      "isPartOf": { "@type": "WebSite", "name": "Shunshou", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Do I need an Obsidian plugin for this?", "acceptedAnswer": { "@type": "Answer", "text": "No, and you don't need Obsidian's Web Clipper plugin either. Shunshou uses Obsidian's own obsidian:// deep link — the same protocol the official Web Clipper uses. With Obsidian installed locally it just works; you fill in your vault name once (leave it empty to use the current vault)." } },
+        { "@type": "Question", "name": "How is this different from Obsidian's official Web Clipper?", "acceptedAnswer": { "@type": "Answer", "text": "The official Web Clipper is a dedicated web-to-Obsidian tool, with its templates and triggers in its own settings. Shunshou is a site-aware action deck: in one panel you get this site's clip actions alongside save-to-Obsidian, save to Orca or SiYuan, and share-image generation. You can pick the article container on the page and save it as a rule, and set an action to auto-run on matching pages. The two don't conflict and can both be installed." } },
+        { "@type": "Question", "name": "Which folder in my vault does it write to, and how is the filename chosen?", "acceptedAnswer": { "@type": "Answer", "text": "Vault paths support subfolders and variables, defaulting to Shunshou/{{date:YYYY-MM-DD}}/{{title}} — for example Shunshou/2026-10-11/Article Title. You can change it to any template, such as Collection/{{date:YYYY}}/{{hostname}}/{{title}}. For a same-name note you can choose to create (or open the existing one), append to the end, or overwrite." } },
+        { "@type": "Question", "name": "Will saving pop open Obsidian and interrupt me?", "acceptedAnswer": { "@type": "Answer", "text": "No, not by default. The action's silent-write option is on, so nothing pops open. Turn it off if you want to see the note after it's written." } },
+        { "@type": "Question", "name": "Can I use it without Obsidian installed?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, by a different route: another action saves Markdown locally as a .md file, with the same variable and subfolder support (for example Shunshou/{{date:YYYY-MM-DD}}/{{title}}.md). Point your downloads folder at your vault and the result is the same. With Obsidian installed, the deep link is more direct and leaves no copy in Downloads." } },
+        { "@type": "Question", "name": "Are images saved into the vault too?", "acceptedAnswer": { "@type": "Answer", "text": "The clip keeps the original image links in Markdown, so the images themselves stay on the source site. To localize them, save the Markdown locally and then let an Obsidian localization plugin handle the rest." } },
+        { "@type": "Question", "name": "Does it cost anything? Do I need an account?", "acceptedAnswer": { "@type": "Answer", "text": "It's free, with no ads and no features locked behind payment, and there's no account to create. Content passes through no server at all — the deep link hands it straight to Obsidian on your own machine." } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics (GA4): counts landing-page visits only; the extension / userscript itself has no analytics (see PRIVACY.md) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 24ch; font-size: clamp(1.9rem, 5.2vw, 3rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 68ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .hero .shot { margin-top: 46px; }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 70ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+  .section .sub b { color: var(--fg-soft); }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid--wide { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+
+  /* ── Comparison table ───────────────────── */
+  .compare { margin-top: 38px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .compare th, .compare td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .compare thead th { background: var(--bg-soft); font-size: 13.5px; }
+  .compare thead th:last-child { color: var(--accent); }
+  .compare tbody tr:last-child td { border-bottom: 0; }
+  .compare td:first-child { color: var(--muted); font-size: 13.5px; white-space: nowrap; }
+  .compare td { color: var(--fg-soft); }
+  .compare td b { color: var(--fg); }
+  @media (max-width: 700px) {
+    .compare { border: 0; background: none; box-shadow: none; }
+    .compare table, .compare tbody, .compare tr, .compare td { display: block; width: 100%; }
+    .compare thead { display: none; }
+    .compare tbody tr { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; padding: 6px 0; box-shadow: var(--shadow-sm); }
+    .compare td { border: 0; padding: 8px 18px; }
+    .compare td:first-child { font-weight: 600; color: var(--seal); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+    .compare td::before { content: attr(data-col) ": "; color: var(--muted); font-size: 12.5px; }
+  }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 80ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 92px 0 84px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 50ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.en.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>Shunshou</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.en.html">Home</a>
+      <a class="nav-link" href="./use-case-siyuan.en.html">SiYuan use case</a>
+      <a class="nav-link" href="./use-case-orca.en.html">Orca Note use case</a>
+      <a class="nav-link" href="./use-case-share-cards.en.html">Share images</a>
+      <a class="nav-link" href="./use-case-instagram.en.html">Instagram use case</a>
+      <a class="nav-lang" href="./use-case-obsidian.html" hreflang="zh-CN">中文</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>Use case · Obsidian</p>
+        <h1>Clipping web pages into Obsidian: one click into your vault</h1>
+        <p class="lede">
+          Shunshou is a browser extension (and a userscript). Find an article worth keeping, click
+          <b>Save to Obsidian</b>, and the text is written into your vault as Markdown through Obsidian's own
+          <code>obsidian://</code> deep link — <b>no server involved</b>. Vault paths take subfolders and dates,
+          and by default nothing pops open to interrupt you.
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+          </a>
+          <a class="btn btn--ghost" href="#install">Other ways to install</a>
+        </div>
+        <p class="note"><b>No server</b> · <b>No Obsidian plugin</b> · fill in your vault name once</p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot__bar"><i></i><i></i><i></i><span>The panel in the corner of an article page: "Save to Obsidian" is right there</span></div>
+        <img src="assets/obsidian/panel.webp" width="1600" height="1075" alt="Shunshou's panel in the corner of an article page, listing Copy page clip, Save Markdown locally and Save to Obsidian">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section class="section" id="why">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Why it's a chore</p>
+        <h2>The "web page → Obsidian" leg takes several steps by hand</h2>
+        <p class="sub">
+          Obsidian itself is a pleasure. The painful part has always been the road leading into it.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">⎘</span>
+          <h3>Copy, switch, paste, clean up</h3>
+          <p>Select the article, copy, switch to Obsidian, find the folder, create a note, paste, then strip the page's own styling and leftover navigation. By the end of a long read you no longer feel like reading it.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⌗</span>
+          <h3>Frontmatter typed by hand</h3>
+          <p>If the note is to be searchable by source, date and author, the YAML has to be written by hand — title, link, capture time, every single time, with format mistakes to match.</p>
+        </article>
+        <article class="card">
+          <span class="mark">☰</span>
+          <h3>Filenames and folders, all manual</h3>
+          <p>This one goes in "Clippings/2026-10", that one in "Read later" — and months later you can't find either. Folder-by-date means creating folders yourself.</p>
+        </article>
+        <article class="card">
+          <span class="mark">✂</span>
+          <h3>An interruption kills the highlight</h3>
+          <p>You want to keep a good sentence: switch window, find the note, paste — and by the time you're back you've lost your place, or you just skip it.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⊘</span>
+          <h3>Noisy clips</h3>
+          <p>When article detection misses, the nav bar, the recommendation rail and "related reading" all come along; comments drag their avatars and like buttons in, and you clean it all up again in the note.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⇥</span>
+          <h3>Archiving a batch is worse</h3>
+          <p>With a dozen articles queued up, it's open, copy, paste, one at a time — while trying to remember which ones you already did.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="section section--soft" id="setup">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Setup</p>
+        <h2>Two steps to connect your vault</h2>
+        <p class="sub">
+          No Obsidian plugin to install and no API to fill in. Shunshou uses Obsidian's own
+          <code>obsidian://</code> deep link — the same protocol the official Web Clipper uses — so Obsidian
+          installed locally is all it takes.
+        </p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Fill in your vault name once</h3>
+          <p>Set it in the action's parameters (<b>leave it empty to use the current vault</b>). No API token to hunt for, no switch to flip.</p>
+        </article>
+        <article class="step">
+          <h3>Set the vault path</h3>
+          <p>The default is <code>Shunshou/{{date:YYYY-MM-DD}}/{{title}}</code> — that is, "Shunshou/2026-10-11/Article Title". Change it to whatever template you like.</p>
+        </article>
+        <article class="step">
+          <h3>Click to save</h3>
+          <p>Click "Save to Obsidian" on an article page. By default nothing pops open; turn off "silent write" if you want to see the note.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Note</span>
+        <p>
+          <b>The first click shows the browser's "Open Obsidian?" confirmation</b> — tick "always allow" and it
+          stops asking. That's the browser's protocol handshake, not Shunshou requesting a permission.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Actions and config -->
+  <section class="section" id="actions">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">In the Studio</p>
+        <h2>Path, content and same-name handling are all visual parameters</h2>
+        <p class="sub">
+          The action isn't a hard-coded button: its content template, vault path and same-name behaviour are all
+          edited in the Studio, with one-step undo if you get it wrong.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">▤</span>
+          <h3>Swap the content template</h3>
+          <p>The default is a web clip (<code>{{page.markdown}}</code> plus a source link); you can switch to the article text or a selection, or write your own template — add frontmatter right there if you want it.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⌗</span>
+          <h3>Paths take variables and subfolders</h3>
+          <p><code>{{date:YYYY-MM-DD}}</code>, <code>{{title}}</code> and <code>{{hostname}}</code> all work; for example <code>Clippings/{{date:YYYY}}/{{hostname}}/{{title}}</code> sorts itself by year and site.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⊜</span>
+          <h3>Three ways to handle a same-name note</h3>
+          <p><b>Create</b> (or open the existing one) / <b>append to the end</b> / <b>overwrite</b> — for a second pass on the same article, appending beats another copy.</p>
+        </article>
+        <article class="card">
+          <span class="mark">◌</span>
+          <h3>Silent write</h3>
+          <p>On by default: nothing pops open and whatever you were doing isn't interrupted. Turn it off and Obsidian will open the note you just wrote.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">One panel</span>
+        <p>
+          "Save to Obsidian" sits alongside the other actions for this site in the same panel — so
+          <b>you don't need a second extension to save a note</b>, and there's no menu to remember.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Without Obsidian -->
+  <section class="section section--soft" id="without-obsidian">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">No Obsidian?</p>
+        <h2>"Save Markdown locally" is the same road</h2>
+        <p class="sub">
+          The deep link needs Obsidian installed. Without it (or if you'd rather not), another action writes the
+          article out as a <code>.md</code> file — the path template takes the same variables and subfolders, so
+          pointing your downloads folder at your vault gives the same result.
+        </p>
+        <p class="sub">
+          One difference: the deep link has Obsidian write the file directly and leaves no copy in Downloads,
+          whereas the file route downloads first and then you (or the system) file it.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <h3>Same template for paths</h3>
+          <p>The default is <code>Shunshou/{{date:YYYY-MM-DD}}/{{title}}.md</code>, and any folder structure works; illegal characters in the filename are cleaned automatically.</p>
+        </article>
+        <article class="card">
+          <h3>Same-name files are numbered</h3>
+          <p>By default it <b>auto-numbers rather than overwriting</b>; with the "manage downloads" permission you can choose to overwrite. Files go only into your own downloads folder.</p>
+        </article>
+        <article class="card">
+          <h3>Format is selectable</h3>
+          <p>Markdown / plain text / inferred from the artifact's extension — and image artifacts such as share cards can be saved locally too.</p>
+        </article>
+        <article class="card">
+          <h3>Chain it with other targets</h3>
+          <p>Use "then do" to make two things one click: save to Obsidian, then copy "《Title》 link" to the clipboard.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="section" id="compare">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Versus the official Web Clipper</p>
+        <h2>They don't solve the same problem</h2>
+        <p class="sub">
+          Obsidian's official Web Clipper is a dedicated "web page → Obsidian" tool, and a good one; its templates
+          and triggers live in its own settings. Shunshou is a <b>site-aware action deck</b> — "save to Obsidian"
+          is one of the actions it offers on this site.
+        </p>
+        <p class="sub">
+          <b>The two don't conflict, and you can run both.</b>
+        </p>
+      </div>
+
+      <div class="compare">
+        <table>
+          <thead>
+            <tr>
+              <th>Concern</th>
+              <th>Obsidian's official Web Clipper</th>
+              <th>Shunshou</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>What it is</td>
+              <td data-col="Official">A dedicated web-clipping tool</td>
+              <td data-col="Shunshou">A <b>site-aware action deck</b>: clipping is one group of actions among many for this site</td>
+            </tr>
+            <tr>
+              <td>How it writes</td>
+              <td data-col="Official">The <code>obsidian://</code> deep link</td>
+              <td data-col="Shunshou">The same deep link (same protocol; fill in the vault name once)</td>
+            </tr>
+            <tr>
+              <td>What else is in the panel</td>
+              <td data-col="Official">Clipping only</td>
+              <td data-col="Shunshou">Save to Orca / SiYuan, share images, selection translation, page operations, element screenshots…</td>
+            </tr>
+            <tr>
+              <td>When the article is wrong</td>
+              <td data-col="Official">Follows its own article detection</td>
+              <td data-col="Shunshou"><b>Pick the container on the page</b> and save it as a rule; comments go through a list primitive per item</td>
+            </tr>
+            <tr>
+              <td>Auto-run</td>
+              <td data-col="Official">—</td>
+              <td data-col="Shunshou">Run on matching pages (off by default, per action, with an optional confirmation)</td>
+            </tr>
+            <tr>
+              <td>Multiple destinations</td>
+              <td data-col="Official">Obsidian</td>
+              <td data-col="Shunshou">Obsidian / local Markdown / Orca / SiYuan, and an <b>action chain</b> can write to several at once</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scenes -->
+  <section class="section section--soft" id="scenes">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Common patterns</p>
+        <h2>Once it's connected, these get easy</h2>
+      </div>
+
+      <div class="grid grid--wide">
+        <article class="card">
+          <h3>See it, log it (auto-run)</h3>
+          <p>Set a kind of page to save on open — your own blog's admin, a column you follow. Browse and it's filed, no click at all. Off by default, enabled per action, and it can ask first.</p>
+        </article>
+        <article class="card">
+          <h3>Selection excerpts straight into the vault</h3>
+          <p>It doesn't have to be the whole page. Select a passage and the capsule's action appends that sentence to today's note — read it, keep it, never leave the page.</p>
+        </article>
+        <article class="card">
+          <h3>Highlight, then save the lot</h3>
+          <p>Select text and click Highlight; the mark stays on the page (surviving a reload, without changing the site's structure). When you're done reading, save every highlight into your vault in one go.</p>
+        </article>
+        <article class="card">
+          <h3>Collect a few, save together</h3>
+          <p>Click "Add to staged" on each passage you like, then write the whole batch into the vault at once from the staged area at the top of the panel.</p>
+        </article>
+        <article class="card">
+          <h3>Save, then copy the link</h3>
+          <p>Chain two things with "then do": save into the vault, then copy "《Title》 link" to the clipboard for a chat window or a to-do list.</p>
+        </article>
+        <article class="card">
+          <h3>Translate a whole page, then file it</h3>
+          <p>A foreign article is translated with <b>your browser's built-in on-device translation</b> (zero setup, no cost, text never leaves your machine); you see it in a bubble first and write it into the vault only if you like it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">FAQ</p>
+        <h2>Questions about Shunshou + Obsidian</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Do I need an Obsidian plugin for this?</summary>
+          <div class="answer">
+            <p>No, and you don't need Obsidian's Web Clipper plugin either. Shunshou uses Obsidian's own <code>obsidian://</code> deep link — the same protocol the official Web Clipper uses. With Obsidian installed locally it just works; you fill in your vault name once (<b>leave it empty to use the current vault</b>).</p>
+          </div>
+        </details>
+        <details>
+          <summary>How is this different from Obsidian's official Web Clipper?</summary>
+          <div class="answer">
+            <p>The official Web Clipper is a dedicated "web page → Obsidian" tool, with its templates and triggers in its own settings. Shunshou is a <b>site-aware action deck</b>: in one panel you get this site's clip actions alongside save-to-Obsidian, save to Orca or SiYuan, and share-image generation. You can pick the article container on the page and save it as a rule, and set an action to auto-run on matching pages.</p>
+            <p><b>The two don't conflict, and you can run both.</b></p>
+          </div>
+        </details>
+        <details>
+          <summary>Which folder in my vault does it write to, and how is the filename chosen?</summary>
+          <div class="answer">
+            <p>Vault paths support subfolders and variables, defaulting to <code>Shunshou/{{date:YYYY-MM-DD}}/{{title}}</code> — for example "Shunshou/2026-10-11/Article Title".</p>
+            <p>You can change it to any template, such as <code>Clippings/{{date:YYYY}}/{{hostname}}/{{title}}</code>. For a same-name note you can choose to <b>create</b> (or open the existing one), <b>append to the end</b>, or <b>overwrite</b>.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Will saving pop open Obsidian and interrupt me?</summary>
+          <div class="answer">
+            <p>No, not by default. The action's <b>silent write</b> option is on, so nothing pops open. Turn it off if you want to see the note after it's written.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can I use it without Obsidian installed?</summary>
+          <div class="answer">
+            <p>Yes, by a different route: another action, "<b>Save Markdown locally</b>", writes the article out as a <code>.md</code> file (with the same variable and subfolder support, e.g. <code>Shunshou/{{date:YYYY-MM-DD}}/{{title}}.md</code>). Point your downloads folder at your vault and the result is the same.</p>
+            <p>With Obsidian installed, the deep link is more direct and leaves no copy in Downloads.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Are images saved into the vault too?</summary>
+          <div class="answer">
+            <p>The clip keeps the original image links in Markdown, so the images themselves stay on the source site. To localize them, save the Markdown locally and then let an Obsidian localization plugin handle the rest.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does it cost anything? Do I need an account?</summary>
+          <div class="answer">
+            <p>It's free, with no ads and no features locked behind payment, and there's no account to create. Content passes through no server at all — the deep link hands it straight to Obsidian on your own machine.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section section--soft" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Install</p>
+        <h2>Pick one and you're set</h2>
+        <p class="sub">The store versions update themselves; the userscript suits phones or anyone who'd rather not install an extension.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome Web Store</h3>
+          <p>The default on desktop, and it updates itself.</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">Install from the Chrome Web Store →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge Add-ons</h3>
+          <p>Same engine as Chrome, same features.</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">Install from Edge Add-ons →</a></p>
+        </article>
+        <article class="step">
+          <h3>Userscript (works on mobile)</h3>
+          <p>Install a script manager first (Tampermonkey / Violentmonkey; Firefox on Android, Safari + Userscripts on iOS), then the script.</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">Install shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Manual</span>
+        <p>
+          To load the zip yourself (or if the stores aren't an option): download <code>shunshou-extension-*.zip</code> from
+          <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>,
+          unzip it, then open <kbd>chrome://extensions</kbd>, turn on Developer mode and choose "Load unpacked".
+          The full walkthrough is on the <a href="./index.en.html#install" style="color:var(--accent)">home page's install section</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="Shunshou">
+      <h2>Good reading deserves to be kept</h2>
+      <p class="tagline">Fill in your vault name once; leave the rest to it.</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from Edge Add-ons
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install the userscript (mobile)
+        </a>
+      </div>
+      <p class="more">Or <a href="https://github.com/hqweay/shunshou/releases/latest">download the zip</a>, or see <a href="./index.en.html#install">every install option</a>.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Shunshou · Context-Aware Web Toolbox</span>
+    <a href="./index.en.html">Home</a>
+    <a href="./use-case-siyuan.en.html">SiYuan use case</a>
+    <a href="./use-case-orca.en.html">Orca Note use case</a>
+    <a href="./use-case-share-cards.en.html">Share images</a>
+    <a href="./use-case-instagram.en.html">Instagram use case</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.en.md" target="_blank" rel="noopener">Privacy Policy</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">Feedback</a>
+    <span class="push">Author: 养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>
