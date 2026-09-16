@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>顺手 · 会看场合的网页工具</title>
+<meta name="description" content="顺手是一个浏览器扩展 / 油猴脚本：看你打开的是哪个站点，就把对应的一组动作放到手边——豆瓣存书影游、B 站收视频、网页剪藏、划词翻译、划词进虎鲸 / 思源，一键生成分享图、把剪藏保存成本地 Markdown（路径可配子目录）；动作还能开「自动运行」，在你打开对应网页时自己跑（默认关闭、逐个开启）。无账号、无服务器，桌面与手机都能装。">
+<link rel="canonical" href="https://shunshou.leay.net/">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/index.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="顺手">
+<meta property="og:url" content="https://shunshou.leay.net/">
+<meta property="og:title" content="顺手 · 会看场合的网页工具">
+<meta property="og:description" content="网页上的事，顺手就能做完。无账号、无服务器。">
+<meta property="og:image" content="https://shunshou.leay.net/assets/screenshot-dock.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216;
+      --bg-soft: #14181e;
+      --surface: #171c23;
+      --fg: #e6edf3;
+      --fg-soft: #c2cbd4;
+      --muted: #8b949e;
+      --border: #262c36;
+      --border-strong: #363d47;
+      --accent: #6cb0ff;
+      --accent-fg: #06121f;
+      --accent-soft: #6cb0ff1a;
+      --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px;
+    padding: 1px 5px;
+  }
+  kbd { border-bottom-width: 2px; }
+  ::selection { background: var(--accent-soft); }
+  @media (min-width: 561px) { .br-mobile { display: none; } }
+
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  /* ── 顶栏 ───────────────────────────────── */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .3s ease, background .3s ease;
+  }
+  .site-header.is-scrolled { border-bottom-color: var(--border); }
+  .site-header .wrap {
+    display: flex; align-items: center; gap: 20px;
+    height: 62px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta {
+    color: var(--accent); font-weight: 600;
+  }
+  /* 窄屏收起主导航链接（.nav-lang 语言切换保留，移动端也能切语言） */
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  /* ── 首屏 ───────────────────────────────── */
+  .hero { position: relative; padding: 76px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 620px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 {
+    margin: 26px 0 0;
+    font-size: clamp(2.75rem, 7.2vw, 4.5rem);
+    letter-spacing: -.045em;
+  }
+  .hero h1 .thin { font-weight: 500; color: var(--fg-soft); }
+  .hero .tagline {
+    margin: 22px auto 0; max-width: 34ch;
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem); color: var(--fg-soft); line-height: 1.7;
+  }
+  .hero .lede {
+    margin: 16px auto 0; max-width: 60ch;
+    font-size: 15px; color: var(--muted);
+  }
+  .cta { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+    white-space: nowrap;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  /* ── 截图外框 ───────────────────────────── */
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot--hero { margin-top: 54px; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── 段落骨架 ───────────────────────────── */
+  .section { padding: 96px 0; }
+  .section--tight { padding: 72px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after { content: ""; height: 1px; flex: 1; background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent); }
+  .section h2 { margin-top: 20px; font-size: clamp(1.7rem, 3.8vw, 2.35rem); }
+  .section .sub { margin-top: 14px; max-width: 62ch; color: var(--muted); font-size: 15.5px; }
+
+  /* ── 站点卡片 ───────────────────────────── */
+  .grid { display: grid; gap: 14px; margin-top: 40px; }
+  .grid--sites { grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 15px; display: flex; align-items: center; gap: 9px; }
+  .card .site {
+    font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0;
+    color: var(--muted); background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 9px;
+  }
+  .card ul { margin: 14px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--fg-soft); }
+  .card li { position: relative; padding-left: 16px; margin-top: 7px; line-height: 1.65; }
+  .card li::before {
+    content: ""; position: absolute; left: 2px; top: .72em;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: color-mix(in srgb, var(--seal) 60%, transparent);
+  }
+  .card--feat h3 { font-size: 16px; }
+  .card--feat p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card--feat .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px;
+    font-size: 17px;
+  }
+
+  /* ── 图文交替 ───────────────────────────── */
+  .split {
+    display: grid; grid-template-columns: 1fr 1.18fr; gap: 64px; align-items: center;
+    margin-top: 64px;
+  }
+  .split:first-of-type { margin-top: 48px; }
+  .split--flip .split__text { order: 2; }
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; gap: 28px; }
+    .split--flip .split__text { order: 0; }
+  }
+  .split__text h3 { font-size: clamp(1.3rem, 2.6vw, 1.6rem); }
+  .split__text .kicker {
+    font-size: 12.5px; font-weight: 600; letter-spacing: .16em; color: var(--seal);
+    text-transform: uppercase; margin-bottom: 12px; display: block;
+  }
+  .split__text p { margin-top: 14px; color: var(--fg-soft); font-size: 15px; }
+  .split__list { margin: 18px 0 0; padding: 0; list-style: none; font-size: 14.5px; color: var(--fg-soft); }
+  .split__list li { display: flex; gap: 10px; margin-top: 9px; }
+  .split__list li b { font-weight: 600; color: var(--fg); flex: none; }
+  .split__shots { display: grid; gap: 16px; }
+  .split__shots--pair { grid-template-columns: 1.25fr 1fr; align-items: start; }
+  .beyond { margin-top: 72px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 0; padding: 0; list-style: none; }
+  .chips li {
+    font-size: 14px; color: var(--fg-soft);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 999px; padding: 7px 16px; box-shadow: var(--shadow-sm);
+  }
+  .chips li:last-child {
+    color: var(--accent); background: transparent; box-shadow: none;
+    border: 1px dashed color-mix(in srgb, var(--accent) 45%, var(--border));
+  }
+
+  /* ── 三步 + 提示条 ──────────────────────── */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--seal); display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  /* ── 隐私三连 ───────────────────────────── */
+  .promise { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 44px; }
+  @media (max-width: 820px) { .promise { grid-template-columns: 1fr; gap: 30px; } }
+  .promise h3 { font-size: 17px; }
+  .promise p { margin-top: 10px; font-size: 14.5px; color: var(--muted); }
+  .promise .rule { height: 2px; width: 34px; background: var(--seal); margin-bottom: 18px; border-radius: 2px; }
+
+  /* ── FAQ ────────────────────────────────── */
+  .faq { margin-top: 40px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 74ch; }
+  details .answer p + p { margin-top: 10px; }
+
+  /* ── 收尾 ───────────────────────────────── */
+  .final { text-align: center; padding: 104px 0 96px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.8rem, 4.4vw, 2.6rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 40ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 32px; }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 40px 0 56px;
+    font-size: 13px; color: var(--muted);
+  }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+
+  /* ── 入场 ───────────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img src="assets/icon-128.png" alt="">
+      <span>顺手</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="#features">功能</a>
+      <a class="nav-link" href="#sites">会看场合</a>
+      <a class="nav-link" href="#automation">自动化</a>
+      <a class="nav-link" href="#install">安装</a>
+      <a class="nav-link" href="#faq">常见问题</a>
+      <a class="nav-lang" href="./index.en.html" hreflang="en">EN</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- 首屏 -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner reveal">
+        <p class="eyebrow"><span class="dot"></span>浏览器扩展 / 油猴脚本 · 桌面与手机 · Edge 已上架，Chrome 审核中</p>
+        <h1>会看场合的<br class="br-mobile"><span class="thin">网页工具</span></h1>
+        <p class="tagline">网页上的事，顺手就能做完。</p>
+        <p class="lede">
+          把网页上的东西收进你自己的笔记——划词存摘录、整页剪藏（正文可自己点选，可存成本地 Markdown）、
+          豆瓣书影游元数据一键入库；也能出 Instagram / 小红书 版式的分享图，
+          划词就地翻译，顺手发推。动作、字段、模板都在配置台里改，不用写代码；
+          还能让动作在你打开对应网页时自己跑——点按钮、填输入框、等元素出现，甚至把页面元素截成图。
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            从 Edge 商店安装
+          </a>
+          <a class="btn btn--ghost" href="#install">
+            三分钟上手
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+        <p class="note"><b>无账号</b> · <b>无服务器</b> · 配置与密钥只存本机</p>
+      </div>
+
+      <figure class="shot shot--hero reveal">
+        <div class="shot__bar"><i></i><i></i><i></i><span>一篇长文 · 右下角悬浮球按站点自动匹配动作</span></div>
+        <img src="assets/screenshot-dock.png" width="2560" height="1600" alt="网页右下角的顺手面板：按当前站点列出复制链接、分享摘录、分享全文、复制网页剪藏、发推文、存进虎鲸 / 思源等动作">
+      </figure>
+    </div>
+  </section>
+
+  <!-- 功能：图文交替 -->
+  <section class="section" id="features" style="padding-top:120px">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">最常用的四件</p>
+        <h2>存笔记、剪藏、分享、翻译</h2>
+        <p class="sub">每一件的字段、清洗规则与卡片版式都在配置台里可视化调整——改错可一键撤销。这四件只是开箱自带的，不是边界：下面那个气泡里跑什么，由你的提示词决定。</p>
+      </div>
+
+      <div class="split reveal">
+        <div class="split__text">
+          <span class="kicker">划词</span>
+          <h3>选中一段话，存进笔记、或就地翻译</h3>
+          <p>选区上方只列出真的用到划选的动作，通常两三个，多了收进 <code>⋯</code>。点浮条不会清掉选区，滚动、点空白或按 Esc 即消失；不喜欢可以在设置里关掉，悬浮球照常可用。</p>
+          <ul class="split__list">
+            <li><b>存笔记</b><span>摘录直接写进虎鲸 / 思源，或复制为 Markdown</span></li>
+            <li><b>翻译</b><span>划一句外语，译文在选区旁<b>就地浮出</b>——不切标签、气泡可拖动、能一键复制</span></li>
+            <li><b>分享</b><span>一张摘录卡片，或直接预填一条推文</span></li>
+          </ul>
+        </div>
+        <div class="split__shots">
+          <figure class="shot">
+            <div class="shot__bar"><i></i><i></i><i></i><span>划词浮条</span></div>
+            <img src="assets/screenshot-selection.png" width="2560" height="1600" loading="lazy" alt="选中网页文字后，选区上方浮出的动作胶囊">
+          </figure>
+        </div>
+      </div>
+
+      <div class="split split--flip reveal">
+        <div class="split__text">
+          <span class="kicker">网页剪藏</span>
+          <h3>正文让你自己点选，剪得干净</h3>
+          <p>内置站点规则覆盖豆瓣书影 / GitHub / B 站 / 微信公众号 / 少数派，其余网页走正文引擎自动识别主内容；被隐藏的内容（含广告拦截器藏掉的广告）不会进剪藏。</p>
+          <ul class="split__list">
+            <li><b>自选元素</b><span>：在页面上点选正文容器，<b>可多选合并</b>，Enter 完成——一个段落、一段短引用也认</span></li>
+            <li><b>不对就换一个</b><span>：动作展开区的「内容范围」可以逐动作指定，也能存成站点规则，下次自动生效</span></li>
+            <li><b>顺手带走</b><span>：复制成 Markdown（含图片链接），粘到 Obsidian / Notion / 思源即用；<b>网页表格也认</b>，剪成 Markdown 表格</span></li>
+            <li><b>存成本地文件</b><span>：一键保存为 <code>.md</code> 文件，路径可写子目录与日期（如 <code>顺手/2026-09-17/标题.md</code>），直接放进 Obsidian / 思源库</span></li>
+            <li><b>存进 Obsidian</b><span>：装了 Obsidian 一键把剪藏写进你的库（<code>obsidian://</code> 深链、不经过服务器）；库内目录可配子目录，同名可追加 / 覆盖</span></li>
+          </ul>
+        </div>
+        <div class="split__shots">
+          <figure class="shot">
+            <div class="shot__bar"><i></i><i></i><i></i><span>配置台 · 取哪一块、取哪些字段，都是你能指的</span></div>
+            <img src="assets/screenshot-extract.png" width="2560" height="1600" loading="lazy" alt="配置台的提取页：系统变量组与逐字段的取数来源">
+          </figure>
+        </div>
+      </div>
+
+      <div class="split reveal">
+        <div class="split__text">
+          <span class="kicker">分享图 · 一键分享</span>
+          <h3>Instagram、小红书的版式，出图就顺手发出去</h3>
+          <p>帖子与笔记的图片会自动补全（含轮播），排成「图片墙」卡片；四种主题（纸感 / 墨感 / 品牌 / 纯白）与四种尺寸（长图 / 4:5 / 3:4 / 1:1），正文太长自动分页、<b>不截断</b>，右下角可带来源页二维码。</p>
+          <ul class="split__list">
+            <li><b>出图即工作台</b><span>：就地换主题 / 字体、改这次的内容，满意了再存回动作</span></li>
+            <li><b>一键分享</b><span>：复制图片 / 保存文件 / 复制文本；发推、微博、Bluesky 等打开官方分享框预填，发布前由你确认</span></li>
+          </ul>
+        </div>
+        <div class="split__shots">
+          <figure class="shot">
+            <div class="shot__bar"><i></i><i></i><i></i><span>结果弹窗：预览 + 调整</span></div>
+            <img src="assets/screenshot-result.png" width="2560" height="1600" loading="lazy" alt="结果弹窗：预览分享图与投递状态">
+          </figure>
+        </div>
+      </div>
+
+      <div class="split split--flip reveal">
+        <div class="split__text">
+          <span class="kicker">豆瓣书影游</span>
+          <h3>书目、影视、游戏的元数据，一键进笔记</h3>
+          <p>豆瓣的书 / 影 / 游页面各自解析出 <b>17 / 20 / 11</b> 个字段（含简介、集数、形式等），一次点击写进你自己的笔记软件——不用复制粘贴，也不用逐个填表。</p>
+          <ul class="split__list">
+            <li><b>落点随你</b><span>：虎鲸（书签 / 摘录 / 任务），或思源（数据库 / 文档 / 日记 / 文档型数据库）</span></li>
+            <li><b>写入前查重</b><span>：已有同名记录时问你「更新 / 跳过 / 新建」，不覆盖你手改过的单元格</span></li>
+            <li><b>封面存进你的资源库</b><span>：图片会先下载再存进去，直接显示缩略图，不会裂图</span></li>
+          </ul>
+        </div>
+        <div class="split__shots">
+          <figure class="shot">
+            <div class="shot__bar"><i></i><i></i><i></i><span>配置台 · 豆瓣图书场景：复制 / 分享 / 存进虎鲸 / 存进思源</span></div>
+            <img src="assets/screenshot-studio.png" width="2560" height="1600" loading="lazy" alt="配置台的豆瓣图书场景：网址匹配规则与「存为图书」「存为图书（思源）」等动作">
+          </figure>
+        </div>
+      </div>
+
+      <div class="beyond reveal">
+        <div class="split__text">
+          <span class="kicker">不止这四件</span>
+          <h3>气泡里跑什么，由你的提示词决定</h3>
+          <p>划词浮出的那个小气泡，不是一个「翻译功能」，而是「文本结果就地显示」这个机制——翻译只是它的第一份配方。把提示词换成事实核查、逻辑判断、摘要、改写，就是另一件动作；同一个结果还能接着出图、发推（等你点头才跑）。</p>
+        </div>
+        <ul class="chips">
+          <li>翻译</li>
+          <li>事实核查</li>
+          <li>逻辑判断</li>
+          <li>摘要</li>
+          <li>改写成推文</li>
+          <li>关键词</li>
+          <li>你自己的提示词</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 会看场合 -->
+  <section class="section section--soft" id="sites">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">会看场合</p>
+        <h2>打开哪个站点，就摆出哪一组动作</h2>
+        <p class="sub">
+          上面那些事，在这些站点上都有现成动作。站点与匹配规则（网址）都能自己改，动作只在它该出现的地方出现；
+          模式按用途组织（开箱有「日常 / 工作 / 学习 / 营销」：日常零配置、工作与学习落笔记、营销出图发帖），
+          想换整套工作流时切一个模式就行，不用逐个改动作。虎鲸 / 思源等后端是全局「连接」，配好就自动出现对应动作。
+        </p>
+      </div>
+
+      <div class="grid grid--sites">
+        <article class="card reveal">
+          <h3>豆瓣 <span class="site">book · movie · game</span></h3>
+          <ul>
+            <li>书 17 / 影 20 / 游 11 个字段自动提取</li>
+            <li>复制信息、生成分享卡片</li>
+            <li>写进虎鲸 / 思源数据库</li>
+          </ul>
+        </article>
+        <article class="card reveal">
+          <h3>B 站 <span class="site">bilibili.com</span></h3>
+          <ul>
+            <li>视频信息 + 评论（含楼中楼）+ 字幕（CC / AI）</li>
+            <li>复制、生成分享卡片</li>
+            <li>存为视频笔记、AI 总结字幕</li>
+          </ul>
+        </article>
+        <article class="card reveal">
+          <h3>X（推特） <span class="site">x.com</span></h3>
+          <ul>
+            <li>推文正文 + 图片</li>
+            <li>复制文案、生成分享卡片</li>
+            <li>发推文预填</li>
+          </ul>
+        </article>
+        <article class="card reveal">
+          <h3>小红书 <span class="site">xiaohongshu.com</span></h3>
+          <ul>
+            <li>标题 / 正文 / <b>全部图片</b>（自动补全轮播）</li>
+            <li>赞藏数与作者</li>
+            <li>复制文案、生成分享卡片</li>
+          </ul>
+        </article>
+        <article class="card reveal">
+          <h3>Instagram <span class="site">instagram.com</span></h3>
+          <ul>
+            <li>帖子图片自动补全</li>
+            <li>排成「图片墙」卡片（含作者 / 日期 / 点赞）</li>
+          </ul>
+        </article>
+        <article class="card reveal">
+          <h3>GitHub <span class="site">github.com</span></h3>
+          <ul>
+            <li>复制 <code>owner/repo</code></li>
+            <li>生成仓库分享卡片</li>
+          </ul>
+        </article>
+        <article class="card reveal">
+          <h3>任意网页 <span class="site">base</span></h3>
+          <ul>
+            <li>Markdown 链接 / 摘录 / 书签 / 任务</li>
+            <li>整页剪藏、<b>保存 Markdown 到本地</b>、<b>存到 Obsidian</b>、AI 总结、<b>划词翻译</b></li>
+            <li>分享图、发推文、点击 / 填写 / 等待</li>
+            <li><b>元素截图</b>：任意一块存成 PNG，多块可拼长图</li>
+          </ul>
+        </article>
+        <article class="card reveal" style="background:linear-gradient(140deg, var(--accent-soft), transparent 70%)">
+          <h3>你自己的站点</h3>
+          <ul>
+            <li>加一条网址匹配规则 + 几个动作，就是一个新场景</li>
+            <li>也可以用「动作市场」装别人做好的动作包</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 自动化 -->
+  <section class="section" id="automation">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">自动化</p>
+        <h2>该自己跑的事，交给它</h2>
+        <p class="sub">
+          每个动作都能设成「自动运行」或「仅建议」——打开对应网页就替你跑，或只提醒你一下。默认关闭、逐个动作开启，
+          可设延迟、冷却与执行前询问；动作链里还能点按钮、填输入框、等元素出现，把页面元素截成图片。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card card--feat reveal">
+          <span class="mark">✓</span>
+          <h3>看到就当记下</h3>
+          <p>豆瓣书 / 影 / 游页自动运行「存为电影 / 图书 / 游戏（思源）」——浏览即入库，一次点击都不用；想更稳就开着「执行前询问」，确认一下再写。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">↧</span>
+          <h3>展开全文再剪藏</h3>
+          <p>一个动作串起「<b>点击</b>『展开全文』→ <b>等待</b>元素出现 → <b>复制网页剪藏</b>」；折叠评论、懒加载长文都适用。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">⌕</span>
+          <h3>划选即搜</h3>
+          <p>拾取站内搜索框，<b>填写输入框</b>引用划选内容——选中一段话点一下就填进去（React 受控搜索框也认）。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">▣</span>
+          <h3>元素截图存档</h3>
+          <p>打开某个报表 / 后台页，把指定区域截成 PNG 保存；也能<b>一次点选多块</b>逐张导出，或<b>竖着拼成一张长图</b>。选择器在页面上「拾取」即可。</p>
+        </article>
+      </div>
+
+      <div class="callout reveal">
+        <span class="k">安全</span>
+        <p>
+          自动运行<b>默认关闭</b>、逐个动作开启；也可以只开「仅建议」，或设成执行前先问你。列进
+          <b>「静默网站」</b>的站点一律不自动触发（悬浮球仍可手动打开）；从「动作市场」装来的动作包
+          就算带自动运行，安装后也是关闭的——开不开永远由你决定。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 能力卡片 -->
+  <section class="section">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">还有</p>
+        <h2>该有的都在，且都不必写代码</h2>
+      </div>
+      <div class="grid grid--feats">
+        <article class="card card--feat reveal">
+          <span class="mark">⛓</span>
+          <h3>接着做：动作链</h3>
+          <p>一个动作跑完接着跑下一步，主步骤成功后按顺序执行。例：存虎鲸书签，接着写一行思源数据库（一次点击，两个库都有）；存完顺手把「《标题》 链接」复制到剪贴板。步骤还能设成<b>「等我确认」</b>——不自动执行，而是在结果面上等你点（比如看完 AI 译文再决定要不要存进笔记）。</p>
+          <p>开箱的「翻译」就带两个这样的下一步：分享图（原文 + 译文）与发推（译文 + 链接）。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">⚙</span>
+          <h3>自动化：点按钮 / 填输入框</h3>
+          <p>动作可以设成「打开对应网页就自动跑」，链条里还能<b>点按钮、填输入框、等元素出现</b>；选择器在页面上「拾取」即可。也能把任意元素截成图，多块还能拼成一张长图。默认关闭、逐个开启。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">✦</span>
+          <h3>AI 提取（可选）</h3>
+          <p>接你自己的 OpenAI 兼容模型（DeepSeek / OpenRouter / 硅基流动 / 本地 Ollama 都行）。提示词就是配置：<code>{{content}}</code> 交给模型，产出摘要 / 文案 / 关键词，再像普通变量一样用在任何动作里；开箱含<b>划词翻译</b>（划选 → 就地气泡显示译文）。不开启时完全不依赖 AI。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">▤</span>
+          <h3>落到你自己的笔记</h3>
+          <p><b>虎鲸</b>（MCP）与<b>思源</b>（内核 API）：数据库 / 文档 / 日记 / 文档型数据库四种落点，缺列自动创建、写入前自动查重、图片自动本地化进笔记资源库。连接由你自己填，直连你的服务。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">⤓</span>
+          <h3>保存到本地文件</h3>
+          <p>剪藏、分享图、正文都能<b>保存成本地文件</b>（Markdown / 文本 / 图片）。保存路径支持变量与子目录——比如 <code>顺手/{{date:YYYY-MM-DD}}/{{title}}.md</code>，直接放进 Obsidian / 思源库；同名自动编号，也可以选覆盖。文件只写进你自己的下载目录，不读、不列举你已有的下载记录。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">◫</span>
+          <h3>一键存进 Obsidian</h3>
+          <p>装了 Obsidian 的话，把网页剪藏<b>直接写进你的库</b>——走 <code>obsidian://</code> 深链交给 Obsidian 落盘，不经过任何服务器；库内路径支持子目录（如 <code>顺手/{{date:YYYY-MM-DD}}/{{title}}</code>），同名可追加 / 覆盖，写完默认不跳出笔记。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">⇄</span>
+          <h3>动作市场</h3>
+          <p>订阅官方目录，按标签或搜索安装别人做好的动作包；依赖与冲突有报告，可检查更新与卸载。动作包是纯数据（动作 / 提取规则 / 提示词），不含代码与密钥。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">✎</span>
+          <h3>配置即数据</h3>
+          <p>模式 / 场景 / 动作 / 变量组都是可视配置：改错 <kbd>⌘Z</kbd> 撤销，可导入导出、可分享。字段来源支持选择器、「标签:值」、meta、JSON-LD、URL 正则、划选、模板与「依次尝试」，还能加变换链；内置变量含整页正文 / 剪藏 / <b>表格</b> / <b>剪贴板</b> / 运行时拾取。</p>
+        </article>
+        <article class="card card--feat reveal">
+          <span class="mark">⌘</span>
+          <h3>本机脚本（进阶）</h3>
+          <p>会写 JS 的话可以为某个站点写一小段取数逻辑，入参 <code>{ url, title, selection, document }</code>。只存本机、不进配置、不随导出与分享；默认不生效，需你自己在扩展详情页开启。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 隐私 -->
+  <section class="section section--soft">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">本地优先</p>
+        <h2>没有账号，没有服务器，不上传你的数据</h2>
+      </div>
+      <div class="promise">
+        <div class="reveal">
+          <div class="rule"></div>
+          <h3>数据不出你自己的服务</h3>
+          <p>写入笔记、调用模型都直接连你配置的地址，不经过作者。导出配置时不含任何密钥。</p>
+        </div>
+        <div class="reveal">
+          <div class="rule"></div>
+          <h3>没有广告与统计</h3>
+          <p>无广告、无埋点、无崩溃上报。动作使用记录与浏览足迹都只在本机，可随时关闭或清空，永不导出。</p>
+        </div>
+        <div class="reveal">
+          <div class="rule"></div>
+          <h3>不改页面的样子</h3>
+          <p>悬浮球与面板渲染在扩展自己的 Shadow DOM 里，不修改页面样式；剪藏的清洗只作用于页面副本。只有你在动作里明确配置了「点击 / 填写」这类网页操作时，它才会按你的选择去操作页面。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 安装 -->
+  <section class="section" id="install">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">安装</p>
+        <h2>三步装好，三分钟上手</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <h3>下载并解压</h3>
+          <p>到 <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a> 下载最新的 <code>shunshou-extension-*.zip</code>，解压到任意目录（不要双击直接运行）。</p>
+        </div>
+        <div class="step reveal">
+          <h3>打开扩展管理页</h3>
+          <p>地址栏输入 <kbd>chrome://extensions</kbd>（Edge 为 <kbd>edge://extensions</kbd>），打开右上角的「开发者模式」。</p>
+        </div>
+        <div class="step reveal">
+          <h3>加载已解压的扩展</h3>
+          <p>点「加载已解压的扩展程序」，选中解压目录。然后打开任意网页，看右下角。</p>
+        </div>
+      </div>
+      <div class="callout reveal">
+        <span class="k">商店</span>
+        <p>
+          <b>Edge 商店已上架</b>（<a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">去安装</a>），装好即自动更新；
+          <b>Chrome 商店审核中</b>，通过后同样换成商店安装。在那之前从 Releases 下载的版本一样能用；
+          有新版本时配置台「关于」页可以手动检查更新，重新加载一次解压目录即可，<b>配置会保留</b>。
+        </p>
+      </div>
+      <div class="callout reveal" style="margin-top:14px">
+        <span class="k">油猴</span>
+        <p>
+          不想装扩展、或在手机上用？先装一个脚本管理器——桌面
+          <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener" style="color:var(--accent)">Tampermonkey</a> /
+          <a href="https://violentmonkey.github.io/" target="_blank" rel="noopener" style="color:var(--accent)">Violentmonkey</a>；
+          Android 用 Firefox for Android（或 Kiwi）；iOS 用 Safari 的 Userscripts。
+          再打开安装链接：
+          <a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" target="_blank" rel="noopener" style="color:var(--accent)"><b>安装 shunshou.user.js</b></a>，
+          脚本管理器会自动检查更新。
+          <b>注入界面已适配手机</b>：悬浮球点一下展开动作面板，钉住的动作常显，「页内配置」铺满屏幕；
+          个别桌面专属能力（浏览足迹只统计当前标签页、保存文件拍平子目录）会显式降级并说明。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section--soft" id="faq">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow2">常见问题</p>
+        <h2>你可能想问的</h2>
+      </div>
+      <div class="faq reveal">
+        <details>
+          <summary>要注册账号吗？</summary>
+          <div class="answer"><p>不要。顺手没有账号体系，装好就能用——开箱的「日常」模式零配置可用。</p></div>
+        </details>
+        <details>
+          <summary>我的数据会去哪？</summary>
+          <div class="answer">
+            <p>内容只在两处流动：你主动点的动作，以及你自己配置的笔记 / 模型服务。作者这边没有服务器，收不到你的任何数据。</p>
+            <p>配置与密钥存本机，导出的配置不含密钥。详见 <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.md" target="_blank" rel="noopener" style="color:var(--accent)">隐私说明</a>。</p>
+          </div>
+        </details>
+        <details>
+          <summary>支持哪些浏览器？收费吗？</summary>
+          <div class="answer"><p>桌面是 Chrome / Edge 扩展（同一内核）；也可以装<b>油猴脚本</b>，在 Chrome / Edge / Firefox 桌面浏览器，以及 Android（Firefox for Android / Kiwi）和 iOS（Safari + Userscripts）上使用。免费使用，没有广告，也没有需要付费解锁的功能。</p></div>
+        </details>
+        <details>
+          <summary>「翻译」用的是哪家翻译？</summary>
+          <div class="answer">
+            <p>用你自己配置的 AI 连接（任何 OpenAI 兼容的模型服务：DeepSeek / OpenRouter / 硅基流动 / 本地 Ollama…）。顺手不自带翻译服务，也不经过作者——译文和网页内容只会发到你填的那个端点。</p>
+            <p>还没配连接时，「翻译」会收在面板底部的「未配置」区，配好自动出现；目标语言写在提示词里，开箱是简体中文。</p>
+          </div>
+        </details>
+        <details>
+          <summary>需要懂技术才能改动作吗？</summary>
+          <div class="answer"><p>不需要。动作、匹配规则、提取字段、内容模板都在配置台里可视化调整，改错可一键撤销。只有「本机脚本」是给会写 JS 的人留的逃生口，不用它也不缺什么。</p></div>
+        </details>
+        <details>
+          <summary>「自动运行」安全吗？</summary>
+          <div class="answer">
+            <p>自动运行<b>默认关闭</b>，要逐个动作开启；也可以只开「仅建议」，或设成执行前先问你——写入笔记这类有副作用的动作建议开着「执行前询问」。</p>
+            <p>列进「静默网站」的站点一律不自动触发，悬浮球仍可手动打开；自动运行只在你当前打开的匹配页面上执行，不做后台批量抓取。从「动作市场」装来的动作包就算带自动运行，安装后也是关闭的。</p>
+          </div>
+        </details>
+        <details>
+          <summary>怎么更新？会不会丢配置？</summary>
+          <div class="answer"><p><b>扩展</b>：下载新版本的 zip，重新走一遍「加载已解压的扩展程序」即可，配置会保留。<b>油猴</b>：脚本管理器会自动检查更新，一般无需操作。新版本新增的默认场景 / 动作会在下次打开时增量补齐——你改过的不动，删掉的不会回来。</p></div>
+        </details>
+        <details>
+          <summary>可以自己加站点吗？</summary>
+          <div class="answer"><p>可以。加一条网址匹配规则、几个动作，就是一个新场景；想省事也可以从「动作市场」装别人分享的动作包，或把自己配好的场景导出成 <code>.action-pack.json</code> 发给朋友。</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 收尾 -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="顺手">
+      <h2>顺手，就是顺手</h2>
+      <p class="tagline">看你打开的是哪个站点，把合适的动作放到手边。</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Edge 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          安装油猴脚本（手机可用）
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">在 GitHub 上看看</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>顺手 · 会看场合的网页工具</span>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.md" target="_blank" rel="noopener">隐私说明</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">反馈</a>
+    <span class="push">作者：养恐龙 · <a href="https://leay.net/" target="_blank" rel="noopener">博客</a></span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var header = document.querySelector('.site-header');
+    var onScroll = function () {
+      header.classList.toggle('is-scrolled', window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    var items = document.querySelectorAll('.reveal');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+    items.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+</body>
+</html>
