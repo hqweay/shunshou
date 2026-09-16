@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orca Note Web Clipper: Save Pages and Highlights as Notes · Shunshou</title>
+<meta name="description" content="Save articles, highlights, tasks and Douban book data into Orca Note — tags and properties created for you, clips stored as a collapsible title + article tree.">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-orca.en.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-orca.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-orca.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-orca.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Shunshou">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-orca.en.html">
+<meta property="og:title" content="Orca Note Web Clipper: Save Pages and Highlights as Notes">
+<meta property="og:description" content="Save articles, highlights, tasks and Douban book data straight into Orca Note — tags and properties created for you.">
+<meta property="og:image" content="https://shunshou.leay.net/assets/screenshot-dock.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Orca Note Web Clipper: Save Pages and Highlights as Notes",
+      "url": "https://shunshou.leay.net/use-case-orca.en.html",
+      "inLanguage": "en",
+      "isPartOf": { "@type": "WebSite", "name": "Shunshou", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is Orca Note, and does Shunshou support it?", "acceptedAnswer": { "@type": "Answer", "text": "Orca Note is a local-first outliner note app that ships its own MCP service. Shunshou writes through that MCP endpoint, saving web articles, selected highlights, tasks and book data as note blocks and attaching tags and properties according to the scheme you configure." } },
+        { "@type": "Question", "name": "Do I have to create the tags and properties in Orca first?", "acceptedAnswer": { "@type": "Answer", "text": "No. Missing tags and properties are created automatically on write, and property values are coerced to the declared type (dates as Unix seconds, single-select values must be one of the defined choices, block references as an array). Existing tags are only filled in, never redefined." } },
+        { "@type": "Question", "name": "What does a saved note look like?", "acceptedAnswer": { "@type": "Answer", "text": "By default it goes to the end of today's daily note. A full-page clip uses the shape of a title parent block with the article as its children, with tags attached to the title, so it opens as a collapsible tree; highlights and tasks are single blocks." } },
+        { "@type": "Question", "name": "Will the clipped article contain ads and navigation?", "acceptedAnswer": { "@type": "Answer", "text": "No. Clipping counts visible text only and then takes the smallest common ancestor around the article, so hidden content (including ads hidden by an ad blocker) never enters the clip. Built-in article rules cover Douban, GitHub, Bilibili, WeChat articles, SSPAI, X threads and Xiaohongshu; everything else goes through the article engine." } },
+        { "@type": "Question", "name": "Does my content go through any third-party server?", "acceptedAnswer": { "@type": "Answer", "text": "No. Content goes only to the MCP endpoint you entered — usually your own machine or LAN. Shunshou has no account system and no server; the author receives none of your data." } },
+        { "@type": "Question", "name": "Can I jump back to the note in Orca after saving?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. A successful save returns an orca-note:// deep link to the block that was just written. Add an Open link step to jump straight there, or a Copy to clipboard step to keep the link." } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics (GA4): counts landing-page visits only; the extension / userscript itself has no analytics (see PRIVACY.md) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 24ch; font-size: clamp(2rem, 5.4vw, 3.1rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 64ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 46px 0 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 66ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid--wide { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+  .card ul { margin: 12px 0 0; padding: 0; list-style: none; font-size: 14.5px; color: var(--fg-soft); }
+  .card li { position: relative; padding-left: 16px; margin-top: 7px; line-height: 1.65; }
+  .card li::before {
+    content: ""; position: absolute; left: 2px; top: .72em;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: color-mix(in srgb, var(--seal) 60%, transparent);
+  }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 76ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 96px 0 88px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 46ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.en.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>Shunshou</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.en.html">Home</a>
+      <a class="nav-link" href="./use-case-siyuan.en.html">SiYuan use case</a>
+      <a class="nav-link" href="./use-case-share-cards.en.html">Share images</a>
+      <a class="nav-link" href="./use-case-obsidian.en.html">Obsidian use case</a>
+      <a class="nav-link" href="./use-case-instagram.en.html">Instagram use case</a>
+      <a class="nav-lang" href="./use-case-orca.html" hreflang="zh-CN">中文</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>Use case · Orca Note</p>
+        <h1>Orca Note web clipper: articles and highlights, saved as notes in one click</h1>
+        <p class="lede">
+          Shunshou is a browser extension (and a userscript). Connect your own Orca repository and a set of
+          "save to Orca" actions appears on the pages you read — a full-page clip becomes a collapsible tree
+          with the title as the parent block and the article as its children, with tags and properties
+          attached; highlights, tasks and Douban books each have their own action.
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+          </a>
+          <a class="btn btn--ghost" href="#install">Other ways to install</a>
+        </div>
+        <p class="note"><b>No account</b> · <b>No server</b> · content goes only to the MCP endpoint you enter</p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot__bar"><i></i><i></i><i></i><span>The orb panel in the corner of a page, listing the actions available for this site</span></div>
+        <img src="assets/screenshot-dock.png" width="2560" height="1600" alt="Shunshou's orb panel in the corner of a web page, listing copy link, share excerpt, share article, copy page clip, post to X and save to Orca / SiYuan actions">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="section" id="problem">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Why it hurts</p>
+        <h2>Getting a web page into your notes usually breaks at these points</h2>
+        <p class="sub">
+          Orca itself is a pleasure. The painful part has always been the "web page → notes" leg.
+          These are the things you do every time, and every time they cost you.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">⎘</span>
+          <h3>Copy, switch, paste, clean up</h3>
+          <p>Select the article, copy, switch to Orca, find today's daily note, paste, then strip the page's own styling and leftover navigation by hand. By the end of a long read you no longer feel like reading it.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⌗</span>
+          <h3>Tags and properties, attached by hand</h3>
+          <p>If the note is to be findable later it needs the bookmark tag plus link and domain properties — which means opening the property panel, scrolling the tag list and filling each field, every single time.</p>
+        </article>
+        <article class="card">
+          <span class="mark">☰</span>
+          <h3>A long article pastes as one lump</h3>
+          <p>The whole article becomes one enormous block and you scroll forever. To get a "title on top, article folded underneath" structure you have to cut and indent it yourself.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⊜</span>
+          <h3>The same page saved twice</h3>
+          <p>You saved it months ago and forgot. Today you save it again, and only find out when you scroll back through your daily notes and see two near-identical entries.</p>
+        </article>
+        <article class="card">
+          <span class="mark">✂</span>
+          <h3>An interruption kills the highlight</h3>
+          <p>You want to keep a good sentence: switch window, find the daily note, paste — and by the time you're back you've lost your place, or you just skip it.</p>
+        </article>
+        <article class="card">
+          <span class="mark">✓</span>
+          <h3>To-dos scattered across the web</h3>
+          <p>In an issue, a doc, an email: "I need to do this." Close the tab and it's gone — there's nowhere the lot of them collect.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="section section--soft" id="setup">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Setup</p>
+        <h2>Three steps to connect your Orca repository</h2>
+        <p class="sub">Shunshou talks to Orca's own MCP service — Orca just needs to be running.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Turn on MCP and copy the token</h3>
+          <p>Enable the MCP service in Orca and copy its token — the default endpoint is <code>http://localhost:18672/mcp</code>.</p>
+        </article>
+        <article class="step">
+          <h3>Add an Orca connection</h3>
+          <p>In Shunshou's Connections page, add an Orca connection with the MCP endpoint, the token and your <b>repository ID</b>, then hit Test. A success says "Connected"; a bad token says authentication failed — no guessing.</p>
+        </article>
+        <article class="step">
+          <h3>Configure a tag scheme</h3>
+          <p>Go back to the action and set its content template, tags and properties, destination and insertion position. The shipped bookmark / excerpt / task / clip / one-line-note actions already come with sensible defaults.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Note</span>
+        <p>
+          Once the connection is configured, <b>the "save to Orca" actions appear where they belong</b>. Before that they
+          sit in the "not configured" section at the bottom of the panel, so they never take up a slot you might click by mistake.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scenes -->
+  <section class="section" id="scenes">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Scenes</p>
+        <h2>The ones people reach for most</h2>
+        <p class="sub">These ship out of the box and are clickable as soon as the connection is set up. Fields, templates and cleaning rules for each are edited visually in the Studio.</p>
+      </div>
+
+      <div class="grid grid--wide">
+        <article class="card">
+          <h3>Full-page clip → a collapsible note tree</h3>
+          <p>The page title becomes the parent block and the article becomes its children, with <b>tags attached to the parent</b> — it opens as a tree you can fold, so a long read is never one lump.</p>
+          <p>The link is stored as a property via the bookmark tag scheme, and hidden content (including ads hidden by an ad blocker) never enters the clip.</p>
+        </article>
+        <article class="card">
+          <h3>Selected highlight → a one-block note</h3>
+          <p>Select a passage and click "Save as excerpt (Orca)" — the quote plus its source link goes into today's daily note, filed under the excerpt tag.</p>
+          <p>Read it, keep it, never leave the page and never switch windows.</p>
+        </article>
+        <article class="card">
+          <h3>Save as task</h3>
+          <p>In an issue, an email or a doc, select the sentence that says what needs doing and click "Save as task (Orca)" — it's written into your daily note under the task tag, status TODO by default.</p>
+          <p>To-dos collect in one place, and scrolling today's note tells you what's outstanding.</p>
+        </article>
+        <article class="card">
+          <h3>Page summary (AI)</h3>
+          <p>"Save as page summary (Orca)" first has your own model summarize the whole article into structured text, then saves it in the same clip shape — <b>title as parent, summary as children</b>.</p>
+          <p>The prompt is just configuration; change one sentence and it becomes a different job (key points, keywords, counter-arguments…).</p>
+        </article>
+        <article class="card">
+          <h3>Douban books / movies / games → notes</h3>
+          <p>Douban book, movie and game pages each yield <b>17 / 20 / 11</b> fields (synopsis, episode count, format, and so on) — one click writes them into Orca.</p>
+          <p>Fields such as the cover image are attached as properties by the tag scheme.</p>
+        </article>
+        <article class="card">
+          <h3>All highlights on the page, at once</h3>
+          <p>Select text and click Highlight — the marks stay on the page (they survive a reload and don't change the page's structure). When you're done reading, <b>save the whole page's highlights to Orca</b> in one go, or copy them as text.</p>
+        </article>
+        <article class="card">
+          <h3>Collect a few, save them together</h3>
+          <p>Click "Add to staged" on each passage you like, then save <b>the whole batch to Orca at once</b> from the staged area at the top of the orb panel. A count badge on the orb reminds you how many are still waiting.</p>
+        </article>
+        <article class="card">
+          <h3>One-line note</h3>
+          <p>Press <kbd>Ctrl/⌘ + Shift + K</kbd> to open the command palette and just type — "Save a note" in the "Use this text…" section stores that sentence in Orca on Enter.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Combinations -->
+  <section class="section section--soft" id="combo">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Combines with</p>
+        <h2>It isn't an isolated "clip button"</h2>
+        <p class="sub">The Orca destination is one link in the toolbox — it can follow another action, or run on its own.</p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <h3>Both libraries at once (action chains)</h3>
+          <p>An action can carry "then do" steps: save an Orca bookmark, then write a SiYuan database row — <b>one click, both libraries populated</b>. Steps run in order, stop at the first failure, and share one extraction of the page.</p>
+        </article>
+        <article class="card">
+          <h3>Jump back to what you saved (deep links)</h3>
+          <p>A successful save returns an <code>orca-note://</code> deep link to the block that was just written. Add an "Open link" step to jump straight there, or "Copy to clipboard" to keep the link around.</p>
+        </article>
+        <article class="card">
+          <h3>See it, log it (auto-run)</h3>
+          <p>Douban book / movie / game pages can be set to auto-run "Save as book (Orca)" the moment you open them — browse and it's filed, no click at all. Off by default, enabled per action, and it can ask you first.</p>
+        </article>
+        <article class="card">
+          <h3>Destination and position are yours</h3>
+          <p>Leave the destination empty for <b>today's daily note</b>, give a block ID to insert at a specific spot, or write <code>date:&lt;Unix seconds&gt;</code> for a particular day. Insertion can go at the end, the beginning, after a block or before one.</p>
+        </article>
+        <article class="card">
+          <h3>Property types coerced for you</h3>
+          <p>Missing tags and properties are created automatically and values are coerced to the declared type — dates as Unix seconds, single-select values must be one of the defined choices, block references as an array. Tag properties are attached structurally, so they don't end up as plain text.</p>
+        </article>
+        <article class="card">
+          <h3>Point at it yourself when it's wrong</h3>
+          <p>Bad article? Pick the container on the page (multi-select merges, Enter finishes), then "Save as rule" to promote it to a lasting rule. Or let AI read the page structure and offer candidates — and <b>preview each candidate for free</b> before choosing.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">FAQ</p>
+        <h2>Questions about Shunshou + Orca Note</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>What is Orca Note, and does Shunshou support it?</summary>
+          <div class="answer">
+            <p>Orca Note is a local-first outliner note app that ships its own MCP service. Shunshou writes through that MCP endpoint, saving web articles, selected highlights, tasks and book data as note blocks and attaching tags and properties according to the scheme you configure.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Do I have to create the tags and properties in Orca first?</summary>
+          <div class="answer">
+            <p>No. Missing tags and properties are <b>created automatically</b> on write, and values are coerced to the declared type (dates as Unix seconds, single-select values must be one of the defined choices, block references as an array). Existing tags are only filled in — your existing property definitions aren't redefined.</p>
+          </div>
+        </details>
+        <details>
+          <summary>What does a saved note look like?</summary>
+          <div class="answer">
+            <p>By default it goes to the <b>end of today's daily note</b>. A full-page clip uses the shape of a title parent block with the article as its children, with tags attached to the title, so it opens as a collapsible tree; highlights and tasks are single blocks.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Will the clipped article contain ads and navigation?</summary>
+          <div class="answer">
+            <p>No. Clipping counts <b>visible text only</b> and then takes the <b>smallest common ancestor</b> around the article — so a page whose article is a single paragraph doesn't fall back to the whole page, and hidden content (including ads hidden by an ad blocker) never enters the clip.</p>
+            <p>Built-in article rules cover Douban, GitHub, Bilibili, WeChat articles, SSPAI, X threads and Xiaohongshu; everything else goes through the article engine. When it's wrong you can pick the container yourself on the page, or save that as a lasting rule.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does my content go through any third-party server?</summary>
+          <div class="answer">
+            <p>No. Content goes only to the MCP endpoint you entered — usually your own machine or LAN. Shunshou has no account system and no server; the author receives none of your data.</p>
+            <p>(When you use the AI summary, the article goes to <b>the model endpoint you configured yourself</b>, and nowhere else.)</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can I jump back to the note in Orca after saving?</summary>
+          <div class="answer">
+            <p>Yes. A successful save returns an <code>orca-note://</code> deep link to the block that was just written. Add an "Open link" step in the action chain to jump straight there, or a "Copy to clipboard" step to keep the link.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does it cost anything? Do I need an account?</summary>
+          <div class="answer">
+            <p>It's free, with no ads and no features locked behind payment, and there's no account to create. Config and secrets stay in your browser, and exported config doesn't carry the secrets.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section section--soft" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Install</p>
+        <h2>Pick one and you're set</h2>
+        <p class="sub">The store versions update themselves; the userscript suits phones or anyone who'd rather not install an extension.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome Web Store</h3>
+          <p>The default on desktop, and it updates itself.</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">Install from the Chrome Web Store →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge Add-ons</h3>
+          <p>Same engine as Chrome, same features.</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">Install from Edge Add-ons →</a></p>
+        </article>
+        <article class="step">
+          <h3>Userscript (works on mobile)</h3>
+          <p>Install a script manager first (Tampermonkey / Violentmonkey; Firefox on Android, Safari + Userscripts on iOS), then the script.</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">Install shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Manual</span>
+        <p>
+          To load the zip yourself (or if the stores aren't an option): download <code>shunshou-extension-*.zip</code> from
+          <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>,
+          unzip it, then open <kbd>chrome://extensions</kbd>, turn on Developer mode and choose "Load unpacked".
+          The full walkthrough is on the <a href="./index.en.html#install" style="color:var(--accent)">home page's install section</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="Shunshou">
+      <h2>Start saving the web into Orca Note</h2>
+      <p class="tagline">Enter the MCP endpoint, token and repository ID; leave the rest to it.</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from Edge Add-ons
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install the userscript (mobile)
+        </a>
+      </div>
+      <p class="more">Or <a href="https://github.com/hqweay/shunshou/releases/latest">download the zip</a>, or see <a href="./index.en.html#install">every install option</a>.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Shunshou · Context-Aware Web Toolbox</span>
+    <a href="./index.en.html">Home</a>
+    <a href="./use-case-siyuan.en.html">SiYuan use case</a>
+    <a href="./use-case-share-cards.en.html">Share images</a>
+    <a href="./use-case-obsidian.en.html">Obsidian use case</a>
+    <a href="./use-case-instagram.en.html">Instagram use case</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.en.md" target="_blank" rel="noopener">Privacy Policy</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">Feedback</a>
+    <span class="push">Author: 养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>

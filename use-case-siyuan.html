@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>思源剪藏与豆瓣书影音收集：网页高亮一键入库 · 顺手</title>
+<meta name="description" content="思源剪藏插件：AI 认一遍网页结构存成规则，正文与评论、豆瓣书影音、网页高亮一键存进思源数据库、日记或指定文档。缺列自动创建、保存前查重、封面图不裂图。">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-siyuan.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-siyuan.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-siyuan.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-siyuan.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="顺手">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-siyuan.html">
+<meta property="og:title" content="思源剪藏与豆瓣书影音收集：网页高亮一键入库">
+<meta property="og:description" content="AI 认一遍网页结构存成规则；正文与评论、豆瓣书影音、网页高亮一键存进思源。">
+<meta property="og:image" content="https://shunshou.leay.net/assets/siyuan/image-9iipgwypvrd21.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "思源剪藏与豆瓣书影音收集：网页高亮一键入库",
+      "url": "https://shunshou.leay.net/use-case-siyuan.html",
+      "inLanguage": "zh-CN",
+      "isPartOf": { "@type": "WebSite", "name": "顺手", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "思源自带剪藏扩展，为什么还要用顺手？", "acceptedAnswer": { "@type": "Answer", "text": "官方扩展擅长「当前这一页剪得好」：一键整页、选区剪藏，图片本地化。顺手多出来的那一层是「把取法变成规则」——让 AI 读一遍网页结构，把正文在哪、评论怎么取、每个字段对应哪个节点存成可复用规则，同一类页面以后一键复用，不再调模型、不再花 token；评论区这类重复结构、以及「元数据 → 数据库」的结构化采集是它的主场。" } },
+        { "@type": "Question", "name": "和思源官方剪藏扩展冲突吗？", "acceptedAnswer": { "@type": "Answer", "text": "不冲突，可以同时装。两者都是通过思源内核的 HTTP API 写入同一个工作空间，互不干扰。快捷键不同：官方是 Ctrl/Cmd+Shift+C 与 Ctrl/Cmd+Shift+S，顺手默认是 Ctrl/Cmd+Shift+K。" } },
+        { "@type": "Question", "name": "豆瓣的书、电影、游戏能直接存进思源数据库吗？", "acceptedAnswer": { "@type": "Answer", "text": "能。豆瓣图书页自动取 17 个字段、电影页 20 个（电影与电视剧通用）、游戏页 11 个，一次点击写进你选的数据库，缺列自动创建；封面这类图片列会自动下载并上传到思源资源库，不会裂图。写入前按主键查重，默认跳过，保护你手改过的单元格。" } },
+        { "@type": "Question", "name": "网页高亮是什么？能存进思源吗？", "acceptedAnswer": { "@type": "Answer", "text": "划选一段话点「高亮」，标注就留在页面上——刷新、重开都还在，而且不改动页面本身的结构。再点一下高亮可以复制这一条或取消（可撤销）。读完整页，本页的高亮可以一次存进思源（或复制成文本）。" } },
+        { "@type": "Question", "name": "AI 生成规则，每次剪藏都要调模型花钱吗？", "acceptedAnswer": { "@type": "Answer", "text": "不用。AI 只在「认页面结构」那一步跑一次，产出的是规则（选择器与字段取法），不是内容。规则存进配置后，之后每次剪藏都是本地按规则取数，不调模型、不花 token，断网也能用。" } },
+        { "@type": "Question", "name": "评论区、回帖这类页面能剪干净吗？", "acceptedAnswer": { "@type": "Answer", "text": "能。列表型结构走「容器 + 逐项子字段 + 逐项模板」：先圈定每一条评论的容器，再为每一项取作者、时间、正文，头像、点赞按钮这类杂元素不会混进来。链滴、V2EX 这类社区的正文加评论可以一次剪成干净的 Markdown。" } },
+        { "@type": "Question", "name": "需要给思源装插件吗？", "acceptedAnswer": { "@type": "Answer", "text": "不需要。顺手走的是思源内核自带的 HTTP API，只要思源在本机跑着，填内核地址（默认 http://127.0.0.1:6806）和 API Token 就能用，不用装任何集市插件。" } },
+        { "@type": "Question", "name": "存进去的内容会重复吗？", "acceptedAnswer": { "@type": "Answer", "text": "默认不会。写入数据库前会按主键内容查重，命中时弹窗问你「更新 / 跳过 / 新建」，默认跳过，保护你手改过的单元格。也可以改成总是跳过或总是新建。" } },
+        { "@type": "Question", "name": "我的内容会经过第三方服务器吗？", "acceptedAnswer": { "@type": "Answer", "text": "不会。内容只发到你填的那个思源内核地址——通常就是你自己的电脑或局域网。顺手没有账号体系、没有服务器，作者收不到你的任何数据。用 AI 认结构时，发出去的只是网页结构摘要（元素与文本），去往你自己配置的模型端点。" } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics（GA4）：只统计落地页访问量；扩展 / 油猴脚本本体不含统计（口径见 PRIVACY.md） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 24ch; font-size: clamp(1.9rem, 5.2vw, 3rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 64ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .hero .shot { margin-top: 46px; }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 66ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+  .section .sub b { color: var(--fg-soft); }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid--wide { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+
+  /* ── 对照表 ─────────────────────────────── */
+  .compare { margin-top: 38px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .compare th, .compare td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .compare thead th { background: var(--bg-soft); font-size: 13.5px; }
+  .compare thead th:last-child { color: var(--accent); }
+  .compare tbody tr:last-child td { border-bottom: 0; }
+  .compare td:first-child { color: var(--muted); font-size: 13.5px; white-space: nowrap; }
+  .compare td { color: var(--fg-soft); }
+  .compare td b { color: var(--fg); }
+  @media (max-width: 700px) {
+    .compare { border: 0; background: none; box-shadow: none; }
+    .compare table, .compare tbody, .compare tr, .compare td { display: block; width: 100%; }
+    .compare thead { display: none; }
+    .compare tbody tr { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; padding: 6px 0; box-shadow: var(--shadow-sm); }
+    .compare td { border: 0; padding: 8px 18px; }
+    .compare td:first-child { font-weight: 600; color: var(--seal); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+    .compare td::before { content: attr(data-col) "："; color: var(--muted); font-size: 12.5px; }
+  }
+
+  /* ── 分步图文 ───────────────────────────── */
+  .walk { margin-top: 56px; display: grid; gap: 26px; }
+  .walk:first-of-type { margin-top: 40px; }
+  .walk__head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .walk__num {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 32%, var(--border)); border-radius: 999px;
+    padding: 3px 11px; flex: none;
+  }
+  .walk__head h3 { font-size: clamp(1.15rem, 2.4vw, 1.4rem); }
+  .walk__body { margin-top: 14px; display: grid; grid-template-columns: 1fr 1.35fr; gap: 40px; align-items: start; }
+  @media (max-width: 900px) { .walk__body { grid-template-columns: 1fr; gap: 22px; } }
+  .walk__body--stack { grid-template-columns: 1fr; }
+  .walk__text p { font-size: 15px; color: var(--fg-soft); }
+  .walk__text p + p { margin-top: 12px; }
+  .walk__text ol { margin: 14px 0 0; padding-left: 20px; font-size: 14.5px; color: var(--fg-soft); }
+  .walk__text li { margin-top: 7px; }
+  .walk__text b { color: var(--fg); }
+  .figs { display: grid; gap: 16px; }
+  .figs--2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 700px) { .figs--2 { grid-template-columns: 1fr; } }
+  .fig { margin: 0; }
+  .fig figcaption { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
+  .fig--tall img { max-height: 620px; width: auto; margin-inline: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 76ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 92px 0 84px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 46ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>顺手</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.html">产品主页</a>
+      <a class="nav-link" href="./use-case-siyuan.html">思源笔记用例</a>
+      <a class="nav-link" href="./use-case-orca.html">虎鲸笔记用例</a>
+      <a class="nav-link" href="./use-case-share-cards.html">分享图用例</a>
+      <a class="nav-link" href="./use-case-obsidian.html">Obsidian 用例</a>
+      <a class="nav-link" href="./use-case-instagram.html">Instagram 用例</a>
+      <a class="nav-lang" href="./use-case-siyuan.en.html" hreflang="en">EN</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- 首屏 -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>用例 · 思源笔记</p>
+        <h1>思源剪藏：AI 认一遍网页结构，<br>存成规则反复用</h1>
+        <p class="lede">
+          思源自带的剪藏扩展已经很够用：一键把整页或选区剪进思源、图片拉成本地资源。
+          顺手多出来的那一层是<b>把取法留下来</b>——对 AI 说一句「把链滴的正文和评论剪进思源」，
+          它读一遍网页结构、把取法存成<b>规则</b>；以后同一类页面直接复用，不再调模型、不再花 token。
+          豆瓣书影音、网页高亮也是同一条路：收集一次，以后都是一下。
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            从 Chrome 商店安装
+          </a>
+          <a class="btn btn--ghost" href="#install">其他安装方式</a>
+        </div>
+        <p class="note"><b>无账号</b> · <b>无服务器</b> · 内容只发到你自己填的思源内核地址</p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot__bar"><i></i><i></i><i></i><span>AI 正在认这一页的结构：逐条列出它看清了哪些节点、验了哪些字段</span></div>
+        <img src="assets/siyuan/image-9iipgwypvrd21.webp" width="1600" height="1064" alt="顺手配置台的 AI 页：逐条列出「读了一遍页面结构（966 个元素）」「看清了节点 e414」「验『article』→ youxia」「验『#comments div[data-author]』→ Mayrain」，最后「交了 11 个字段」">
+      </figure>
+    </div>
+  </section>
+
+  <!-- 不同在哪 -->
+  <section class="section" id="difference">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">不同在哪</p>
+        <h2>「这一次剪得干净」和「这一次怎么剪的能留下来」是两件事</h2>
+        <p class="sub">
+          思源官方剪藏扩展做的事很明确：一键把整页或选区剪进思源、图片拉成本地资源，质量在持续变好。
+          顺手不与它竞争那件事——它管<b>把这一页收下来</b>，顺手管<b>这一类页面的收法能不能存住</b>。
+        </p>
+        <p class="sub">
+          差别在于「正文在哪、评论怎么取」这个判断是不是被保存下来：官方剪藏每次都重新算一遍；
+          顺手把它<b>沉淀成一条可编辑、可导出、可复用的规则</b>，于是第二次、第一百次是零成本的，
+          而且你能看见它到底取了哪个节点、取到了什么值。
+        </p>
+      </div>
+
+      <div class="compare">
+        <table>
+          <thead>
+            <tr>
+              <th>关心的点</th>
+              <th>思源自带剪藏扩展</th>
+              <th>顺手</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>基本剪藏</td>
+              <td data-col="官方">整页 / 选区一键剪进思源，图片本地化，快捷键 <kbd>Ctrl/⌘+Shift+S</kbd></td>
+              <td data-col="顺手">同样支持；另有划词摘录、本页高亮一次入库、暂存攒批</td>
+            </tr>
+            <tr>
+              <td>正文认不准怎么办</td>
+              <td data-col="官方">跟随扩展自身的正文识别</td>
+              <td data-col="顺手"><b>在页面上点选容器</b>，满意了「存为规则」；也能让 AI 读一遍结构给候选，<b>候选可以不花钱先看效果</b></td>
+            </tr>
+            <tr>
+              <td>取法能不能留下来</td>
+              <td data-col="官方">每次重新识别，取法不落盘</td>
+              <td data-col="顺手"><b>存成规则</b>：可编辑、可导出分享、可复用；看得见每个字段取自哪个节点、取到了什么值</td>
+            </tr>
+            <tr>
+              <td>AI 的角色</td>
+              <td data-col="官方">—</td>
+              <td data-col="顺手"><b>AI 用来生成规则，不用来生成内容</b>：认一次结构 → 存成规则 → 之后纯本地取数，不再调模型</td>
+            </tr>
+            <tr>
+              <td>评论区 / 回帖</td>
+              <td data-col="官方">整页剪藏会连头像、点赞按钮一起带进来</td>
+              <td data-col="顺手">走<b>列表原语</b>：圈定每条评论的容器，逐项取作者 / 时间 / 正文，杂元素不进产物</td>
+            </tr>
+            <tr>
+              <td>元数据 → 数据库</td>
+              <td data-col="官方">支持剪藏到数据库（作为一行）</td>
+              <td data-col="顺手">同样支持，并且能<b>按字段取</b>：应用名 / 评分 / 开发者 / 链接各来自不同节点，<b>缺列自动创建</b>，写入前按主键查重</td>
+            </tr>
+            <tr>
+              <td>网页高亮</td>
+              <td data-col="官方">—</td>
+              <td data-col="顺手">划选即高亮、标在页面上、刷新还在；本页高亮可<b>一次存进思源</b></td>
+            </tr>
+            <tr>
+              <td>豆瓣书影音</td>
+              <td data-col="官方">整页剪藏（元数据在正文里）</td>
+              <td data-col="顺手"><b>按字段取</b>（书 17 / 影 20 / 游 11），直接写进数据库列，封面本地化不裂图</td>
+            </tr>
+            <tr>
+              <td>多个落点</td>
+              <td data-col="官方">思源（笔记本 / 数据库）</td>
+              <td data-col="顺手">思源四种落点之外，同一套配置还能存虎鲸、Obsidian、本地 Markdown，并可用<b>动作链</b>一次写多个</td>
+            </tr>
+            <tr>
+              <td>自动运行</td>
+              <td data-col="官方">—</td>
+              <td data-col="顺手">打开匹配页面自动跑（默认关、逐个开、可设执行前询问）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="k">共存</span>
+        <p>
+          <b>两个可以同时装</b>，都是通过思源内核的 HTTP API 写进同一个工作空间，互不干扰。
+          快捷键也不冲突：官方是 <kbd>Ctrl/⌘+Shift+C</kbd>（复制选区）与 <kbd>Ctrl/⌘+Shift+S</kbd>（整页），
+          顺手默认是 <kbd>Ctrl/⌘+Shift+K</kbd>（命令面板）。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 例一 -->
+  <section class="section section--soft" id="example-thread">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">例一 · 正文 + 评论</p>
+        <h2>把链滴社区的正文和评论剪进思源</h2>
+        <p class="sub">
+          这类页面最难的不是正文，是评论：一堆头像、点赞数、「1 回复」混在文字里。
+          一句话说清要什么，剩下的交给 AI 认结构。
+        </p>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 01</span>
+          <h3>一句话说明想达到的效果</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>在配置台「AI」页的意图框里写人话就行——不用写选择器，也不用知道网页长什么样：</p>
+            <p><b>「把链滴社区的正文和评论剪藏到思源笔记」</b></p>
+            <p>它会顺带把「评论要单独成块、带上作者和时间」这类隐含要求也识别出来，因为它看得见页面上有哪些元素、各自写了什么。</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>一句话 → 生成配置</span></div>
+                <img src="assets/siyuan/image-axlioigro53o5.webp" width="1600" height="1056" loading="lazy" alt="配置台 AI 页的意图输入框，填写「将链滴社区的正文和评论剪藏到思源笔记」，下方是生成的配置预览">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 02</span>
+          <h3>AI 读一遍页面，逐条验证再写进配置</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>它先把这一页读一遍（有多少元素、结构长什么样），再<b>逐条验证</b>：每个字段到底取到了什么值，验证通过才写进配置。</p>
+            <p>所以不会出现「预览看着对、跑起来取不到」。这个过程看得见——每一条都是「看清了哪个节点」「验了哪个字段、取到什么值」。</p>
+            <p><b>关键在这里</b>：这一趟跑完，产出的不是一段内容，而是<b>规则</b>。规则存进你的配置，之后每次剪藏都是本地按规则取数——不再调模型，也不花 token。</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>认结构 → 验字段 → 交配置</span></div>
+                <img src="assets/siyuan/image-9iipgwypvrd21.webp" width="1600" height="1064" loading="lazy" alt="AI 认结构过程：读了一遍页面结构（966 个元素）、看清了若干节点、验证 article 与 comments 选择器取到的真实值，最后「交了 11 个字段」">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 03</span>
+          <h3>以后每次一键剪，评论是干净的</h3>
+        </div>
+        <div class="walk__body walk__body--stack">
+          <div class="walk__text">
+            <p>规则生效后，同一类页面点一下就出结果。下面是 V2EX 帖子的剪藏效果——正文在上、评论单独成块，作者与时间都在，头像和按钮都没有跟进来：</p>
+          </div>
+          <div class="figs figs--2">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>V2EX 帖子：正文 + 评论一次剪干净</span></div>
+                <img src="assets/siyuan/image-z6jkpri8ii5i1.webp" width="1600" height="1046" loading="lazy" alt="思源里的剪藏结果：正文若干段之后是「全部评论」小节，每条评论是「用户名（时间）：内容」的干净列表，没有头像与按钮">
+              </div>
+            </figure>
+            <figure class="fig fig--tall">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>链滴帖子剪进思源的样子</span></div>
+                <img src="assets/siyuan/image-qos80jt64jj93.webp" width="1600" height="2619" loading="lazy" alt="思源里的链滴剪藏结果：标题、来源链接、作者、发布时间，接着是正文与代码块，最后是评论小节">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 例二 -->
+  <section class="section" id="example-database">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">例二 · 元数据 → 数据库</p>
+        <h2>把 App Store 的应用信息收进思源数据库</h2>
+        <p class="sub">
+          剪藏解决「留一份」，数据库解决「攒一批」。
+          想把一堆应用的名称、评分、开发者、链接、图标收成一张表——手动建列、手动复制太麻烦，
+          而这正是「让 AI 认一次规则」最划算的场景。
+        </p>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 01</span>
+          <h3>一句话：把这个页面存到思源数据库</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>在 App Store 的应用页面上打开配置台，写一句「<b>存存待装应用到思源</b>」——它会附上当前页面的结构摘要，所以生成的选择器<b>先在本页验证过</b>。</p>
+            <p>不需要事先想清楚「要取哪几个字段」：它读得懂这页有什么，会把应用名、评分、开发者、链接、图标这些能取到的字段一起提出来。</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>页面内配置台 · 一句话生成</span></div>
+                <img src="assets/siyuan/image-7d2c3nmhqkxdk.webp" width="1600" height="1059" loading="lazy" alt="在 App Store 页面里打开顺手配置台，意图框里写着「存存待装应用到思源」">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 02</span>
+          <h3>一个字段有多个可能的值？你来挑</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>同一个字段在页面上常常有几种取法（比如评分可能取到 <code>4.3</code>，也可能取到 <code>4.3 星</code>）。它会把候选都摆出来，标出推荐的那条，你可以<b>点另一条换掉</b>。</p>
+            <p>都不对就点「<b>不对，我来指</b>」——在页面上点一下要的那个位置，字段就补上了。取不到的字段不会被硬编进配置。</p>
+            <p>每条候选还写着它的<b>取法</b>（地标 / 父节点 / 绝对结构路径），不是只给你一个值看。</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>多候选值：换一条 / 不对我来指</span></div>
+                <img src="assets/siyuan/image-gcq04jd4qblii.webp" width="1600" height="1062" loading="lazy" alt="AI 生成结果里每个字段有多个候选值卡片，标注「推荐」与取法（地标、父节点、绝对结构路径），另有一个「不对，我来指」按钮">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 03</span>
+          <h3>列方案自动生成，缺列自动创建</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>生成的动作里，列方案已经配好了：评分（文本）、开发者（文本）、链接（链接）、图标（资源）、应用名（按库定义）。</p>
+            <p>你只需要选一下<b>存到哪个数据库</b>——下拉里会列出你工作空间里的数据库，带路径，不用手抄 ID。写入时缺的列会自动创建，类型按方案给。</p>
+          </div>
+          <div class="figs figs--2">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>列方案：字段 → 列，类型可选</span></div>
+                <img src="assets/siyuan/image-kdw7m1xw8sv30.webp" width="1600" height="1068" loading="lazy" alt="生成的动作参数：连接为思源笔记，列方案里有评分、开发者、链接、图标、应用名，各自绑定字段与列类型">
+              </div>
+            </figure>
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>选数据库：带路径，不用手抄 ID</span></div>
+                <img src="assets/siyuan/image-od7fsb8np0j7h.webp" width="1600" height="1062" loading="lazy" alt="数据库下拉列出工作空间里的数据库，带笔记本与路径；下方是主键内容与列方案">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 04</span>
+          <h3>之后每看到一个应用，点一下就多一行</h3>
+        </div>
+        <div class="walk__body walk__body--stack">
+          <div class="walk__text">
+            <p>规则跑起来之后，收藏应用就变成「看到 → 点一下」。表里的应用名、链接、开发者、评分都是自动填的，图标存在思源资源库里，不会裂图。</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>思源数据库：应用名 / 链接 / 开发者 / 评分</span></div>
+                <img src="assets/siyuan/image-1masulhlhb1wv.webp" width="1600" height="440" loading="lazy" alt="思源里的数据库表格，列为应用名、链接、开发者、评分、主键，已经有两行应用数据">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 豆瓣书影音 -->
+  <section class="section" id="douban">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">最常用的一类 · 豆瓣</p>
+        <h2>豆瓣的书、电影、游戏，一键进思源数据库</h2>
+        <p class="sub">
+          这是最典型的「结构化采集」：页面上明明写着书名、作者、评分、封面，但要把它们变成数据库里的列，
+          过去只能一边看一边手打。顺手把整页的字段直接读出来——<b>图书 17 个、电影 20 个（电影与电视剧通用）、游戏 11 个</b>。
+        </p>
+        <p class="sub">
+          而且这里不需要 AI：豆瓣是内置的<b>系统变量组</b>，开箱就能用。
+          想改成自己想要的字段？点「覆盖」就能编辑，默认只对豆瓣生效，其它站点自动回退系统版。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">📖</span>
+          <h3>图书 · 17 个字段</h3>
+          <p>书名、作者、译者、出品方、副标题、原作名、出版社、出版年、页数、定价、装帧、ISBN、评分、评价人数、豆瓣 ID、链接…</p>
+          <p>主键存书名，其余作为列——<b>缺列自动创建</b>，类型按方案给（出版年 = 日期，页数 / 评分 / 评价人数 = 数字）。</p>
+        </article>
+        <article class="card">
+          <span class="mark">🎬</span>
+          <h3>电影 / 电视剧 · 20 个字段</h3>
+          <p>片名、年份、形式、导演、主演、类型、制片国家、上映日期、片长、集数、简介、评分、评价人数、评论、封面、豆瓣 ID、链接…</p>
+          <p>电影与电视剧<b>共用同一套字段</b>，不用分别配；「形式」与「集数」会告诉你这是电影还是剧集。</p>
+        </article>
+        <article class="card">
+          <span class="mark">🎮</span>
+          <h3>游戏 · 11 个字段</h3>
+          <p>游戏名、类型、平台、别名、开发商、发行商、发行日期、评论、封面、豆瓣 ID、链接。</p>
+        </article>
+        <article class="card">
+          <span class="mark">▣</span>
+          <h3>封面不会裂</h3>
+          <p>豆瓣图片有防盗链，直接粘链接进思源过几天就成破图。这里默认<b>先下载、再上传到思源资源库</b>，数据库里直接显示缩略图，换设备、断网都能看。</p>
+          <p>不想要本地副本，可以切回「保留原链接」。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⊜</span>
+          <h3>存重了会先问你</h3>
+          <p>按主键内容（书名 / 片名）判重，完全一致才算命中。命中时弹窗问你「更新 / 跳过 / 新建」——<b>默认跳过</b>，保护你手改过的单元格。</p>
+        </article>
+        <article class="card">
+          <span class="mark">↻</span>
+          <h3>浏览即入库</h3>
+          <p>把豆瓣页的「存为图书（思源）」设成<b>自动运行</b>：打开书页就自己存好了，一次点击都不用。默认关闭、逐个动作开启，也可以设成「执行前询问」先确认一下。</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">两种落点</span>
+        <p>
+          同一套字段，<b>虎鲸</b>那边也能存——开箱同时带「存为图书」与「存为图书（思源）」两条，
+          想要两个库都有，还可以用<b>动作链</b>把它们串起来：一次点击，虎鲸存一条、思源写一行。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 高亮 -->
+  <section class="section section--soft" id="highlight">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">边读边标</p>
+        <h2>网页高亮：标在页面上，一次存进思源</h2>
+        <p class="sub">
+          摘录的麻烦在于「读完才回头整理」，而读的时候往往懒得切窗口。
+          顺手把标注直接留在页面上：划选点「<b>高亮</b>」，它就在那儿了——<b>刷新、重开都还在</b>。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">✎</span>
+          <h3>标在页面上，不改页面结构</h3>
+          <p>高亮是叠在原文上的，<b>不修改网页本身的 DOM</b>——不会把页面搞乱，也不会破坏别人的网站。</p>
+          <p>存在本机，不随导出与同步走；Safari 上高亮很多时可能变慢，每页上限 200 条。</p>
+        </article>
+        <article class="card">
+          <span class="mark">☑</span>
+          <h3>能改、能取消、能撤销</h3>
+          <p>再点一下已高亮的文字，可以「复制这一条」或「取消这一条高亮」，<b>取消了还能撤销</b>——不会点错一下就没。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⇥</span>
+          <h3>读完整页，一次入库</h3>
+          <p>页面上标了一堆之后，一条「<b>存本页高亮（思源）</b>」把它们一起存进思源（留空就是今日日记），一条一段落，清清爽爽。</p>
+          <p>也可以「复制本页高亮」当文本用，或在任何模板里用 <code>{{highlights}}</code> 引用。</p>
+        </article>
+        <article class="card">
+          <span class="mark">◇</span>
+          <h3>和摘录、暂存配合</h3>
+          <p>三种粒度各管一段：<b>高亮</b>是「留在页面上慢慢看」，<b>摘录</b>是「这一句现在就进日记」，<b>暂存</b>是「攒几条一起存」。都能落到思源。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 怎么搭 -->
+  <section class="section section--soft" id="setup">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">怎么搭</p>
+        <h2>三步接上你的思源</h2>
+        <p class="sub">不用给思源装任何插件。顺手走的是思源内核自带的 HTTP API——只要思源在本机跑着就行。</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>拿到 API Token</h3>
+          <p>打开思源 →「设置 → 关于 → API token」，复制那串 token。</p>
+        </article>
+        <article class="step">
+          <h3>新建一条思源连接</h3>
+          <p>在顺手的「连接」页新建思源连接，填内核地址（默认 <code>http://127.0.0.1:6806</code>）与 API Token，点「测试连接」——
+          它会告诉你连上了思源哪个版本、有几个笔记本、几个数据库。</p>
+        </article>
+        <article class="step">
+          <h3>给动作选落点</h3>
+          <p>回到动作里挑「存进思源」的那一条，选落点：数据库条目 / 当日日记 / 指定文档 / 文档型数据库。配好即用，改错可一键撤销。</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">说明</span>
+        <p>
+          连接配好后，<b>「存进思源」的动作会自动出现在该出现的地方</b>——没配好之前它们收在面板底部的「未配置」区，
+          不会占着位置让你误点。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 场景 -->
+  <section class="section" id="scenes">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">其他场景</p>
+        <h2>配好之后，顺手还能做这些</h2>
+        <p class="sub">下面都是开箱自带的，配好连接就能直接点；每条的字段、模板与清洗规则都在配置台里可视化调整。</p>
+      </div>
+
+      <div class="grid grid--wide">
+        <article class="card">
+          <h3>划词摘录 → 当日日记</h3>
+          <p>选中一段话，点浮条上的「摘录到日记」，直接追加进当天的日记——<b>日记不存在会自动新建</b>。</p>
+          <p>也可以指定固定文档（找不到会新建），并选择插到文末还是文首。读到哪里记到哪里，不用离开页面。</p>
+        </article>
+        <article class="card">
+          <h3>豆瓣书目 / 影视 / 游戏 → 数据库</h3>
+          <p>豆瓣的书 / 影 / 游页面各自解析出 <b>17 / 20 / 11</b> 个字段（含简介、集数、形式等），一次点击写进数据库。</p>
+          <p>封面这类<b>图片列会自动本地化</b>：先下载、再上传到思源资源库，数据库里直接显示缩略图，换设备、断网都不会裂。</p>
+        </article>
+        <article class="card">
+          <h3>新建文档到数据库</h3>
+          <p>把内容建成一篇思源文档并<b>绑定</b>进所选数据库——可以跟随数据库自己的「条目模板」，也可以自定义保存路径（如 <code>/收集/{{dateText}}/{{title}}</code>）。</p>
+          <p>另有一条 AI 总结版：先用模型把整页正文总结成结构化中文，再落库。</p>
+        </article>
+        <article class="card">
+          <h3>整页译文落库</h3>
+          <p>整篇外文正文先用<b>浏览器内置的端上翻译</b>（桌面 Chrome / Edge 138+）译成中文——不用配连接、不花钱、<b>文本不出本机</b>。</p>
+          <p>译文先<b>在气泡里显示给你看</b>，你点「存进思源」才真的写进去；不满意就当没发生过。</p>
+        </article>
+        <article class="card">
+          <h3>本页高亮一次存进去</h3>
+          <p>划选点「高亮」，标注留在页面上（刷新还在、不改页面结构）；读完整页，把这一页的高亮<b>一次性存进思源</b>，或复制成文本。</p>
+        </article>
+        <article class="card">
+          <h3>攒几条，一次存</h3>
+          <p>看到一句就点「加入暂存」，攒够了在悬浮球面板顶部的暂存区里<b>一次全部存进思源</b>——不用一段一段点。球上会有计数角标提醒你还攒着几条。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 搭配 -->
+  <section class="section section--soft" id="combo">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">和别的能力搭起来</p>
+        <h2>它不是一个孤立的「剪藏按钮」</h2>
+        <p class="sub">思源落点是整套工具箱里的一个环节，能接在别的动作后面，也能自己跑。</p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <h3>双库同存（动作链）</h3>
+          <p>一个动作可以配一串「接着做」：存虎鲸书签，接着写一行思源数据库——<b>一次点击，两个库都有</b>。步骤按顺序执行，任一步失败即停，整条链共用同一份页面信息。</p>
+        </article>
+        <article class="card">
+          <h3>看到就当记下（自动运行）</h3>
+          <p>豆瓣书 / 影 / 游页可以设成打开就自动运行「存为图书（思源）」——浏览即入库，一次点击都不用。默认关闭、逐个动作开启，还能设「执行前询问」。</p>
+        </article>
+        <article class="card">
+          <h3>正文保真</h3>
+          <p>落点是思源时，正文改用<b>思源内核自己的转换</b>（比内置转换保真更高）：标题、表格同列合并、代码块都能还原。剪藏本身保留链接、强调与公式（写成 <code>$…$</code> / <code>$$…$$</code>）。</p>
+        </article>
+        <article class="card">
+          <h3>换行按思源的语义</h3>
+          <p>逐动作可调「正文换行」：单换行视为段落 / 段落之间 1 或 2 个换行（<b>思源语义：1 = 同一块内换行，2 = 新块</b>）/ 压缩连续空行。</p>
+        </article>
+        <article class="card">
+          <h3>图片清单写进正文</h3>
+          <p>模板里引用 <code>{{page.images}}</code> 或 <code>{{field.*.images}}</code> 时加 <code>:md</code> 提示，会渲染成 Markdown 图片并随正文一起本地化到思源资源库，不用手写 <code>![](...)</code>。</p>
+        </article>
+        <article class="card">
+          <h3>规则可以分享出去</h3>
+          <p>配好的正文规则能单独导出成规则包发给别人；整个场景也能导出成 <code>.action-pack.json</code>。别人装上就是同一套取法，不用重新让 AI 认一遍。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">常见问题</p>
+        <h2>关于「顺手 + 思源」，你可能想问的</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>思源自带剪藏扩展，为什么还要用顺手？</summary>
+          <div class="answer">
+            <p>官方扩展擅长「<b>当前这一页剪得好</b>」：一键整页 / 选区剪藏，图片本地化，质量一直在改进。</p>
+            <p>顺手多出来的那一层是「<b>把取法变成规则</b>」：让 AI 读一遍网页结构，把正文在哪、评论怎么取、每个字段对应哪个节点存成可复用规则。同一类页面以后一键复用，<b>不再调模型、不再花 token</b>。评论区这类重复结构、以及「元数据 → 数据库」的结构化采集是它的主场。</p>
+          </div>
+        </details>
+        <details>
+          <summary>和思源官方剪藏扩展冲突吗？</summary>
+          <div class="answer">
+            <p>不冲突，<b>可以同时装</b>。两者都是通过思源内核的 HTTP API 写入同一个工作空间，互不干扰。</p>
+            <p>快捷键也不同：官方是 <kbd>Ctrl/⌘+Shift+C</kbd>（复制选区）与 <kbd>Ctrl/⌘+Shift+S</kbd>（整页剪藏），顺手默认是 <kbd>Ctrl/⌘+Shift+K</kbd>（命令面板）。</p>
+          </div>
+        </details>
+        <details>
+          <summary>AI 生成规则，每次剪藏都要调模型花钱吗？</summary>
+          <div class="answer">
+            <p>不用。AI 只在「<b>认页面结构</b>」那一步跑一次，产出的是规则（选择器与字段取法），<b>不是内容</b>。规则存进配置后，之后每次剪藏都是本地按规则取数——不调模型、不花 token，断网也能用。</p>
+            <p>想省得更彻底，还可以完全不碰 AI：在页面上自己点选容器、「存为规则」，效果一样，只是要你多指几下。</p>
+          </div>
+        </details>
+        <details>
+          <summary>评论区、回帖这类页面能剪干净吗？</summary>
+          <div class="answer">
+            <p>能。列表型结构走「<b>容器 + 逐项子字段 + 逐项模板</b>」：先圈定每一条评论的容器，再为每一项取作者、时间、正文，头像、点赞按钮这类杂元素不会混进来。</p>
+            <p>链滴、V2EX 这类社区的「正文 + 评论」可以一次剪成干净的 Markdown；条目之间有分隔符、有条目上限（超出会写明「还有 N 条没取」）。</p>
+          </div>
+        </details>
+        <details>
+          <summary>豆瓣的书、电影、游戏能直接存进思源数据库吗？</summary>
+          <div class="answer">
+            <p>能。豆瓣图书页取 <b>17</b> 个字段、电影页 <b>20</b> 个（电影与电视剧共用同一套）、游戏页 <b>11</b> 个，一次点击写进你选的数据库，<b>缺列自动创建</b>，类型按方案给。</p>
+            <p>封面这类图片会<b>先下载再上传到思源资源库</b>，数据库里直接显示缩略图，换设备、断网都不会裂。写入前按主键查重，默认跳过，保护你手改过的单元格。</p>
+          </div>
+        </details>
+        <details>
+          <summary>网页高亮是什么？能存进思源吗？</summary>
+          <div class="answer">
+            <p>划选一段话点「<b>高亮</b>」，标注就留在页面上——刷新、重开都还在，而且<b>不改动网页本身的结构</b>。再点一下高亮可以复制这一条或取消（取消了还能撤销）。</p>
+            <p>读完整页，本页的高亮可以<b>一次存进思源</b>（留空 = 今日日记），或复制成文本。高亮存在本机，不随导出与同步走。</p>
+          </div>
+        </details>
+        <details>
+          <summary>需要给思源装插件吗？</summary>
+          <div class="answer">
+            <p>不需要。顺手走的是思源内核自带的 HTTP API，只要思源在本机跑着，填内核地址（默认 <code>http://127.0.0.1:6806</code>）和 API Token 就能用，不用装任何集市插件。</p>
+          </div>
+        </details>
+        <details>
+          <summary>存进去的内容会重复吗？</summary>
+          <div class="answer">
+            <p>默认不会。写入数据库前会按主键内容查重，命中时弹窗问你「更新 / 跳过 / 新建」——<b>默认跳过</b>，保护你手改过的单元格。也可以改成总是跳过或总是新建。</p>
+            <p>文档型数据库同理：命中同名文档时问你是跳过还是仍然新建。</p>
+          </div>
+        </details>
+        <details>
+          <summary>我的内容会经过第三方服务器吗？</summary>
+          <div class="answer">
+            <p>不会。内容只发到你填的那个思源内核地址——通常就是你自己的电脑或局域网。顺手没有账号体系、没有服务器，作者收不到你的任何数据。</p>
+            <p>用 AI 认结构时，发出去的只是<b>网页结构摘要</b>（元素与文本），去往你自己配置的模型端点；用「整页译文落库」时翻译由你浏览器的内置翻译在本机完成，文本同样不出本机。</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 安装 -->
+  <section class="section section--soft" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">安装</p>
+        <h2>选一种装上就行</h2>
+        <p class="sub">商店装的两家都会自动更新；油猴脚本适合手机或不想装扩展的场景。</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome 商店</h3>
+          <p>桌面首选，装好即自动更新。</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">去 Chrome 商店安装 →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge 商店</h3>
+          <p>与 Chrome 同一内核，功能一致。</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">去 Edge 商店安装 →</a></p>
+        </article>
+        <article class="step">
+          <h3>油猴脚本（手机可用）</h3>
+          <p>先装脚本管理器（Tampermonkey / Violentmonkey；Android 用 Firefox，iOS 用 Safari + Userscripts），再装脚本。</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">安装 shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">手动</span>
+        <p>
+          想用 zip 手动加载（或商店装不上）：到 <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>
+          下载 <code>shunshou-extension-*.zip</code> 解压，然后在 <kbd>chrome://extensions</kbd> 打开「开发者模式」→「加载已解压的扩展程序」选中该目录。
+          完整步骤见<a href="./index.html#install" style="color:var(--accent)">产品主页的安装说明</a>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 收尾 -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="顺手">
+      <h2>让这一类页面，以后都是一下</h2>
+      <p class="tagline">配好内核地址与 API Token，剩下的交给它。</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Chrome 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Edge 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          安装油猴脚本（手机可用）
+        </a>
+      </div>
+      <p class="more">也可以 <a href="https://github.com/hqweay/shunshou/releases/latest">下载 zip 手动加载</a>，或<a href="./index.html#install">看全部安装方式</a>。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>顺手 · 会看场合的网页工具</span>
+    <a href="./index.html">产品主页</a>
+    <a href="./use-case-orca.html">虎鲸笔记用例</a>
+    <a href="./use-case-share-cards.html">分享图用例</a>
+    <a href="./use-case-obsidian.html">Obsidian 用例</a>
+    <a href="./use-case-instagram.html">Instagram 用例</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.md" target="_blank" rel="noopener">隐私说明</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">反馈</a>
+    <span class="push">作者：养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>

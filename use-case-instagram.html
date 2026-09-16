@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instagram 图片下载：帖子原图一键取回（含轮播）· 顺手</title>
+<meta name="description" content="打开 Instagram 帖子点一下，整条轮播的原图一次取回：逐张预览、复制，或一次下载全部。图片在你自己的浏览器里取回，不经过第三方下载站、不上传，也不需要额外登录。">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-instagram.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-instagram.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-instagram.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-instagram.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="顺手">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-instagram.html">
+<meta property="og:title" content="Instagram 图片下载：帖子原图一键取回（含轮播）">
+<meta property="og:description" content="轮播图一次性全部取回，逐张预览 / 复制 / 下载全部。不经过第三方下载站，也不用把帖子链接贴给谁。">
+<meta property="og:image" content="https://shunshou.leay.net/assets/instagram/download-result.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Instagram 图片下载：帖子原图一键取回（含轮播）",
+      "url": "https://shunshou.leay.net/use-case-instagram.html",
+      "inLanguage": "zh-CN",
+      "isPartOf": { "@type": "WebSite", "name": "顺手", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "会上传到你们的服务器吗？", "acceptedAnswer": { "@type": "Answer", "text": "不会。顺手没有服务器：取图在你的浏览器里完成（扩展由本地后台发起请求，油猴脚本走脚本管理器自己的请求能力），图片不上传、不经第三方中转。" } },
+        { "@type": "Question", "name": "需要额外登录 Instagram 吗？", "acceptedAnswer": { "@type": "Answer", "text": "不需要。动作读的是这条帖子的公开数据（帖子页与官方 embed 页）；浏览器里是什么状态就用什么状态。" } },
+        { "@type": "Question", "name": "视频 / Reels 能下载吗？", "acceptedAnswer": { "@type": "Answer", "text": "暂时只能取到 Reels 的封面图，视频本体还不在这一步里。所以别为了下视频装它——这条边界写在明面上。" } },
+        { "@type": "Question", "name": "一次能取多少张？取不全怎么办？", "acceptedAnswer": { "@type": "Answer", "text": "单条帖子最多 20 张，重复链接会自动去掉；单张超过约 7MB 的会被跳过，并在结果里说明失败了几张。" } },
+        { "@type": "Question", "name": "下载的文件存到哪了？", "acceptedAnswer": { "@type": "Answer", "text": "默认不自动存：图片先留在结果弹窗里，点「下载全部（N）」才写进浏览器自己的下载目录（默认文件名是「用户名-日期」）。" } },
+        { "@type": "Question", "name": "手机能用吗？", "acceptedAnswer": { "@type": "Answer", "text": "扩展只在桌面浏览器上；手机需要装油猴脚本。不过 Instagram 在手机浏览器里会一直引导你打开 App，所以这条动作更适合在电脑上跑。" } },
+        { "@type": "Question", "name": "收费吗？要注册账号吗？", "acceptedAnswer": { "@type": "Answer", "text": "免费使用，没有广告，也没有需要付费解锁的功能；不需要注册任何账号，配置只存在你自己的浏览器里。" } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics（GA4）：只统计落地页访问量；扩展 / 油猴脚本本体不含统计（口径见 PRIVACY.md） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 24ch; font-size: clamp(1.9rem, 5.2vw, 3rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 66ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .hero .shot { margin-top: 46px; }
+
+  /* 首屏三连出图：不同平台的原图比例差很大（推文宽、小红书高），
+     所以统一限高 + object-fit: contain，不让最高那张把首屏撑成一屏。 */
+  .hero-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 46px; align-items: end; }
+  @media (max-width: 820px) { .hero-gallery { grid-template-columns: 1fr; gap: 26px; } }
+  .hero-gallery figure { margin: 0; }
+  .hero-gallery img {
+    width: 100%; max-height: 320px; object-fit: contain;
+    border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); background: var(--surface);
+  }
+  @media (max-width: 820px) { .hero-gallery img { max-height: 420px; } }
+  .hero-gallery figcaption { margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 68ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+  .section .sub b { color: var(--fg-soft); }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+
+  /* ── 图样画廊 ───────────────────────────── */
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 44px; align-items: start; }
+  @media (max-width: 900px) { .gallery { grid-template-columns: 1fr; gap: 34px; } }
+  .gallery figure { margin: 0; }
+  .gallery img {
+    width: 100%; border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); background: var(--surface);
+  }
+  .gallery figcaption { margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+  .gallery figcaption b { display: block; color: var(--fg); font-size: 14.5px; margin-bottom: 3px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 78ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 92px 0 84px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 48ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>顺手</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.html">产品主页</a>
+      <a class="nav-link" href="./use-case-siyuan.html">思源笔记用例</a>
+      <a class="nav-link" href="./use-case-orca.html">虎鲸笔记用例</a>
+      <a class="nav-link" href="./use-case-share-cards.html">分享图用例</a>
+      <a class="nav-link" href="./use-case-obsidian.html">Obsidian 用例</a>
+      <a class="nav-lang" href="./use-case-instagram.en.html" hreflang="en">EN</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- 首屏 -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>用例 · Instagram 图片下载</p>
+        <h1>Instagram 帖子的原图，点一下全部取回</h1>
+        <p class="lede">
+          想存一张图，现在得走一遍：点开轮播、右键、另存为、改名字——十张图来十遍，手机上更难受。
+          顺手把这一步压成一下：打开帖子点「<b>下载 Instagram 图片</b>」，<b>轮播图一次性全部取回</b>，
+          在结果弹窗里逐张预览、复制，或者「下载全部（N）」一次存完。
+          图片在<b>你自己的浏览器里</b>取回——不经过第三方下载站，也不用把帖子链接贴给谁。
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            从 Chrome 商店安装
+          </a>
+          <a class="btn btn--ghost" href="#install">其他安装方式</a>
+        </div>
+        <p class="note"><b>轮播全都要</b> · <b>先看再存</b> · <b>不经过任何服务器</b></p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot__bar"><i></i><i></i><i></i><span>帖子页右下角的面板 + 结果弹窗：逐张预览，一次存整组</span></div>
+        <img src="assets/instagram/download-result.webp" width="2236" height="1480" alt="Instagram 帖子页上弹出的「下载 Instagram 图片」结果弹窗：中间预览第 1 张图，下方是「复制此页 / 下载此页 / 下载全部（6）」三个按钮，左上角显示第 1 / 6 张">
+      </figure>
+    </div>
+  </section>
+
+  <!-- 为什么 -->
+  <section class="section" id="why">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">为什么麻烦</p>
+        <h2>「把这张图存下来」，现在有六道坎</h2>
+        <p class="sub">
+          存一张图本身不难，难的是每条路都留了个尾巴：要么尺寸不对，要么得重复动手，要么得先把链接交给别人。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">⇲</span>
+          <h3>右键存下来的是缩略图</h3>
+          <p>页面上右键「存储图片」，拿到的常是被压过的小尺寸版本，放大就糊。原图那条链接页面其实已经加载了，只是没递到你手上。</p>
+        </article>
+        <article class="card">
+          <span class="mark">▤</span>
+          <h3>轮播十张，得点十遍</h3>
+          <p>一次点开一张、右键一次、再改一次名。想存整组，先点十遍；点漏一张还得回头找。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⛔</span>
+          <h3>第三方下载站要贴链接</h3>
+          <p>把帖子链接贴给一个不认识的站点：弹广告、等倒计时，有的还先把图片搬到它自己的服务器上再给你。</p>
+        </article>
+        <article class="card">
+          <span class="mark">◫</span>
+          <h3>要的是原图，不是重排版</h3>
+          <p>分享图是把内容重新排成一张卡片；这里要的是<b>图本身</b>——一像素不改，拿去当素材、当参考、当存档。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⌘</span>
+          <h3>文案、作者、日期想一起留</h3>
+          <p>图存下来了，出处丢了：谁发的、什么时候发的、原文写了什么。回头想找原帖，只能凭记忆搜。</p>
+        </article>
+        <article class="card">
+          <span class="mark">␡</span>
+          <h3>存完不知道存哪了</h3>
+          <p>文件名是一串哈希，一堆图混在下载目录里，排不进相册、也认不出是哪条帖子。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 怎么用 -->
+  <section class="section section--soft" id="how">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">怎么用</p>
+        <h2>Instagram 图片下载，三步就完事</h2>
+        <p class="sub">
+          不用配任何连接、不用注册、不用额外登录 Instagram。动作跟着帖子页走——匹配到 <code>/p/…</code> 或 <code>/reel/…</code> 才会出现。
+        </p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>① 打开帖子页</h3>
+          <p>在 instagram.com 打开任意帖子或 Reels 详情页。浏览器里现在是什么登录状态，就用什么状态——不要求你登进去。</p>
+        </article>
+        <article class="step">
+          <h3>② 点「下载 Instagram 图片」</h3>
+          <p>面板里的这条动作会先把这条帖子的<b>完整图片列表</b>取回来，所以轮播不会只给你当前看到的那一张。</p>
+        </article>
+        <article class="step">
+          <h3>③ 在弹窗里挑</h3>
+          <p>逐张预览：<b>复制此页</b>直接粘进聊天 / 文档，<b>下载此页</b>存单张，<b>下载全部（N）</b>一次存整组。默认不自动往磁盘写东西。</p>
+        </article>
+      </div>
+
+      <figure class="shot" style="max-width:380px;margin:38px auto 0">
+        <div class="shot__bar"><i></i><i></i><i></i><span>手机上（油猴脚本）：同一条动作、同一个弹窗</span></div>
+        <img src="assets/instagram/mobile-result.webp" width="608" height="1316" alt="手机浏览器里的 Instagram 帖子页：弹出「下载 Instagram 图片」结果弹窗，预览第 1 / 6 张，下方是「复制此页 / 下载此页 / 下载全部（6）」三个按钮与「关闭」">
+      </figure>
+    </div>
+  </section>
+
+  <!-- 下载细节 -->
+  <section class="section" id="download">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">这条动作做了什么</p>
+        <h2>原图，整组，先看再存</h2>
+        <p class="sub">
+          一句话说清：它把「帖子里的原图」变成你可以预览、复制、下载的一组文件，剩下的决定权都在你手上。
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">⇉</span>
+          <h3>Instagram 轮播，一次整组取回</h3>
+          <p>轮播图的图片会<b>自动补全</b>（页面自己只挂当前几张，动作会把这条帖子的图片全取回来），单条帖子最多 20 张。</p>
+        </article>
+        <article class="card">
+          <span class="mark">◆</span>
+          <h3>取的是原图，不是缩略图</h3>
+          <p>用的是页面自己加载的那条大图链接——不重新压缩、不加水印、不改尺寸。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⛨</span>
+          <h3>不经过第三方</h3>
+          <p>取图在<b>你自己的浏览器里</b>完成：没有我们的服务器，图片不上传、不中转，也不需要把链接交给任何下载站。</p>
+        </article>
+        <article class="card">
+          <span class="mark">👁</span>
+          <h3>先看再存</h3>
+          <p>图片取回来后先留在结果弹窗里。<b>不点下载就不会往磁盘写文件</b>，也不会顺手替你保存到某个目录。</p>
+        </article>
+        <article class="card">
+          <span class="mark">⧉</span>
+          <h3>复制常常比下载快</h3>
+          <p>多数场景只是要把它粘进微信 / 文档 / 笔记——那就「复制此页」，省一次落盘再找文件的工夫。</p>
+        </article>
+        <article class="card">
+          <span class="mark">🏷</span>
+          <h3>文件名认得出</h3>
+          <p>默认用「<b>用户名-日期</b>」命名，不是一串哈希；存一批下来也知道哪张属于哪条帖子。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 分享图 -->
+  <section class="section section--soft" id="share">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">同一个帖子的另一种出口</p>
+        <h2>想要的是「一张好看的卡片」，也有</h2>
+        <p class="sub">
+          下载原图与分享图是<b>两条不同的出口</b>，都从同一份提取结果出发：一个给你原图，一个把帖子重新排成卡片——
+          作者、配图、文案、日期各归其位，右下角带一个能扫回原帖的二维码。
+        </p>
+      </div>
+
+      <div class="gallery">
+        <figure>
+          <img src="assets/instagram/share-gallery.webp" width="1000" height="1913" alt="真机出的分享图：顶部是作者昵称与用户名，中间 7 张插画排成图片墙，底部是日期、点赞数与帖子链接，右下角二维码">
+          <figcaption><b>轮播帖（7 张）</b>图片自动补全后排成图片墙，作者、日期、点赞数与原帖链接都在卡上，右下角二维码扫回原帖。</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/instagram/share-single.webp" width="1000" height="1563" alt="真机出的分享图：顶部是作者与用户名，中间是一张油画作品，底部是日期、点赞数与帖子链接，右下角二维码">
+          <figcaption><b>单图帖</b>一张图也能成卡：版式与轮播一致，只是图片墙变成单图。</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/share/instagram-post.webp" width="1080" height="1226" alt="Instagram 帖子生成的分享图卡片：作者与用户名、帖子图片、日期与点赞数、帖子链接，右下角二维码">
+          <figcaption><b>主题与尺寸</b>四种主题、四种尺寸随内容选，水印与二维码可改；改完能存回动作当默认。详见<a href="./use-case-share-cards.html" style="color:var(--accent)">分享图用例</a>。</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">常见问题</p>
+        <h2>关于 Instagram 图片下载，你可能想问的</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>会上传到你们的服务器吗？</summary>
+          <div class="answer">
+            <p>不会。顺手<b>没有服务器</b>：取图在你的浏览器里完成（扩展由本地后台发起请求，油猴脚本走脚本管理器自己的请求能力），图片不上传、不经第三方中转。</p>
+            <p>唯一出网的地方，是去 instagram.com 取这条帖子的页面与图片本身。</p>
+          </div>
+        </details>
+        <details>
+          <summary>需要额外登录 Instagram 吗？</summary>
+          <div class="answer">
+            <p>不需要。动作读的是这条帖子的公开数据（帖子页与官方 embed 页）；浏览器里是什么状态就用什么状态。</p>
+            <p>它<b>不绕过登录墙、不碰私密账号</b>：拿不到就如实报错，不会去猜、也不会替你伪装身份。</p>
+          </div>
+        </details>
+        <details>
+          <summary>视频 / Reels 能下载吗？</summary>
+          <div class="answer">
+            <p>暂时<b>只能取到 Reels 的封面图</b>，视频本体还不在这一步里。所以别为了下视频装它——这条边界写在明面上。</p>
+          </div>
+        </details>
+        <details>
+          <summary>一次能取多少张？取不全怎么办？</summary>
+          <div class="answer">
+            <p>单条帖子最多 20 张，重复链接会自动去掉；单张超过约 7MB 的会被跳过，并在结果里说明失败了几张。</p>
+            <p>哪一张没取到会单独计数，不会假装成功——去看运行详情里的诊断就知道卡在哪一步。</p>
+          </div>
+        </details>
+        <details>
+          <summary>下载的文件存到哪了？</summary>
+          <div class="answer">
+            <p>默认<b>不自动存</b>：图片先留在结果弹窗里，点「下载全部（N）」才写进浏览器自己的下载目录（默认文件名是「用户名-日期」）。</p>
+            <p>不想落盘就只点「复制此页」，一样能把图拿到手。</p>
+          </div>
+        </details>
+        <details>
+          <summary>手机能用吗？</summary>
+          <div class="answer">
+            <p>扩展只在桌面浏览器上；手机需要装油猴脚本。不过 Instagram 在手机浏览器里会一直引导你打开 App，所以这条动作更适合在电脑上跑。</p>
+          </div>
+        </details>
+        <details>
+          <summary>收费吗？要注册账号吗？</summary>
+          <div class="answer">
+            <p>免费使用，没有广告，也没有需要付费解锁的功能；不需要注册任何账号，配置只存在你自己的浏览器里。</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 安装 -->
+  <section class="section section--soft" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">安装</p>
+        <h2>选一种装上就行</h2>
+        <p class="sub">商店装的两家都会自动更新；油猴脚本适合手机或不想装扩展的场景。</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome 商店</h3>
+          <p>桌面首选，装好即自动更新。</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">去 Chrome 商店安装 →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge 商店</h3>
+          <p>与 Chrome 同一内核，功能一致。</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">去 Edge 商店安装 →</a></p>
+        </article>
+        <article class="step">
+          <h3>油猴脚本（手机可用）</h3>
+          <p>先装脚本管理器（Tampermonkey / Violentmonkey；Android 用 Firefox，iOS 用 Safari + Userscripts），再装脚本。</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">安装 shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">手动</span>
+        <p>
+          想用 zip 手动加载（或商店装不上）：到 <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>
+          下载 <code>shunshou-extension-*.zip</code> 解压，然后在 <kbd>chrome://extensions</kbd> 打开「开发者模式」→「加载已解压的扩展程序」选中该目录。
+          完整步骤见<a href="./index.html#install" style="color:var(--accent)">产品主页的安装说明</a>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 收尾 -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="顺手">
+      <h2>存下来，才是你的</h2>
+      <p class="tagline">装好就能用，不用配任何东西。</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Chrome 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          从 Edge 商店安装
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          安装油猴脚本（手机可用）
+        </a>
+      </div>
+      <p class="more">也可以 <a href="https://github.com/hqweay/shunshou/releases/latest">下载 zip 手动加载</a>，或<a href="./index.html#install">看全部安装方式</a>。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>顺手 · 会看场合的网页工具</span>
+    <a href="./index.html">产品主页</a>
+    <a href="./use-case-siyuan.html">思源笔记用例</a>
+    <a href="./use-case-orca.html">虎鲸笔记用例</a>
+    <a href="./use-case-share-cards.html">分享图用例</a>
+    <a href="./use-case-obsidian.html">Obsidian 用例</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.md" target="_blank" rel="noopener">隐私说明</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">反馈</a>
+    <span class="push">作者：养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>
