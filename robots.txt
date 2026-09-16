@@ -1,0 +1,5 @@
+# 顺手官网（GitHub Pages）。落地页不设任何抓取限制，全部页面都该被索引。
+User-agent: *
+Allow: /
+
+Sitemap: https://shunshou.leay.net/sitemap.xml

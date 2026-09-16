@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SiYuan Clipper, Douban Collecting and Web Highlights · Shunshou</title>
+<meta name="description" content="A SiYuan web clipper that turns AI-read page structure into reusable rules: clip articles and comments, file Douban books into a database, save highlights.">
+<link rel="canonical" href="https://shunshou.leay.net/use-case-siyuan.en.html">
+<link rel="alternate" hreflang="zh-CN" href="https://shunshou.leay.net/use-case-siyuan.html">
+<link rel="alternate" hreflang="en" href="https://shunshou.leay.net/use-case-siyuan.en.html">
+<link rel="alternate" hreflang="x-default" href="https://shunshou.leay.net/use-case-siyuan.html">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Shunshou">
+<meta property="og:url" content="https://shunshou.leay.net/use-case-siyuan.en.html">
+<meta property="og:title" content="SiYuan Clipper, Douban Collecting and Web Highlights">
+<meta property="og:description" content="AI reads a page once and turns the recipe into a reusable rule; clip articles and comments, file Douban items, save highlights — into SiYuan.">
+<meta property="og:image" content="https://shunshou.leay.net/assets/siyuan/image-9iipgwypvrd21.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon-128.png">
+<link rel="apple-touch-icon" href="assets/icon-128.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "SiYuan Clipper, Douban Collecting and Web Highlights",
+      "url": "https://shunshou.leay.net/use-case-siyuan.en.html",
+      "inLanguage": "en",
+      "isPartOf": { "@type": "WebSite", "name": "Shunshou", "url": "https://shunshou.leay.net/" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "SiYuan already has an official clipper. Why use Shunshou?", "acceptedAnswer": { "@type": "Answer", "text": "The official extension is good at clipping this one page well: one-click full page or selection, images localized. What Shunshou adds is turning the recipe into a rule — AI reads the page structure once and saves where the article is, how comments are shaped and which node each field comes from as a reusable rule. Every later page of the same kind is one click with no model call and no token cost." } },
+        { "@type": "Question", "name": "Does it conflict with the official SiYuan clipper?", "acceptedAnswer": { "@type": "Answer", "text": "No, you can run both. Both write into the same workspace through the SiYuan kernel's HTTP API. Their shortcuts differ too: the official one uses Ctrl/Cmd+Shift+C and Ctrl/Cmd+Shift+S, while Shunshou defaults to Ctrl/Cmd+Shift+K for the command palette." } },
+        { "@type": "Question", "name": "Can Douban books, movies and games go straight into a SiYuan database?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. A Douban book page yields 17 fields, a movie page 20 (movies and TV series share the same set) and a game page 11 — one click writes them into the database you pick, with missing columns created automatically. Cover images are downloaded and uploaded to the SiYuan asset library so they never break. Rows are deduped by primary key before writing, skipping by default to protect cells you edited by hand." } },
+        { "@type": "Question", "name": "What are web highlights, and can they be saved to SiYuan?", "acceptedAnswer": { "@type": "Answer", "text": "Select a passage and click Highlight; the mark stays on the page, surviving a reload and without changing the page's own structure. Clicking a highlight again lets you copy or remove it (removal can be undone). When you are done reading, every highlight on the page can be saved to SiYuan in one go, or copied as text." } },
+        { "@type": "Question", "name": "Does generating rules with AI cost money on every clip?", "acceptedAnswer": { "@type": "Answer", "text": "No. AI runs only once, during the structure-reading step, and it produces a rule (selectors and field recipes) rather than content. Once the rule is saved to your config, every later clip extracts locally by rule — no model call, no tokens, and it works offline." } },
+        { "@type": "Question", "name": "Can pages like comment threads be clipped cleanly?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. List-shaped structures use a container plus per-item subfields and a per-item template: you mark the container for each comment, then take author, time and body per item, so avatars and like buttons never enter the output. Article plus comments on communities like LD246 and V2EX can be clipped into clean Markdown in one go." } },
+        { "@type": "Question", "name": "Do I need to install a SiYuan plugin?", "acceptedAnswer": { "@type": "Answer", "text": "No. Shunshou talks to SiYuan's own kernel HTTP API. As long as SiYuan is running, enter the kernel address (default http://127.0.0.1:6806) and an API token — no marketplace plugin required." } },
+        { "@type": "Question", "name": "Does my content go through any third-party server?", "acceptedAnswer": { "@type": "Answer", "text": "No. Content goes only to the SiYuan kernel address you entered — usually your own machine or LAN. Shunshou has no account system and no server; the author receives none of your data. When AI reads a page structure, what leaves is only a structural summary of the page (elements and text), going to the model endpoint you configured yourself." } }
+      ]
+    }
+  ]
+}
+</script>
+<!-- Google Analytics (GA4): counts landing-page visits only; the extension / userscript itself has no analytics (see PRIVACY.md) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH3F7D71LE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-SH3F7D71LE');
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --bg-soft: #f5f3ef;
+    --surface: #ffffff;
+    --fg: #1f2328;
+    --fg-soft: #454c54;
+    --muted: #6e7781;
+    --border: #e7e4de;
+    --border-strong: #d6d2ca;
+    --accent: #0969da;
+    --accent-fg: #ffffff;
+    --accent-soft: #0969da14;
+    --seal: #b2352c;
+    --radius: 16px;
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, .04), 0 10px 30px -18px rgba(31, 35, 40, .28);
+    --shadow-lg: 0 2px 4px rgba(31, 35, 40, .04), 0 40px 80px -40px rgba(31, 35, 40, .35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+            "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --bg-soft: #14181e; --surface: #171c23;
+      --fg: #e6edf3; --fg-soft: #c2cbd4; --muted: #8b949e;
+      --border: #262c36; --border-strong: #363d47;
+      --accent: #6cb0ff; --accent-fg: #06121f; --accent-soft: #6cb0ff1a; --seal: #cf5a4e;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .7);
+      --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 40px 80px -40px rgba(0, 0, 0, .9);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  h1, h2, h3 { line-height: 1.28; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  p { margin: 0; }
+  code, kbd {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px;
+  }
+  ::selection { background: var(--accent-soft); }
+  .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+  @media (max-width: 640px) { .wrap { width: min(1080px, 100% - 36px); } }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header .wrap { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--fg-soft); }
+  .nav a { position: relative; transition: color .2s ease; }
+  .nav a:hover { color: var(--fg); }
+  .nav a::after {
+    content: ""; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px;
+    background: var(--seal); transition: right .25s ease;
+  }
+  .nav a:hover::after { right: 0; }
+  .nav .nav-cta { color: var(--accent); font-weight: 600; }
+  @media (max-width: 760px) { .nav .nav-link { display: none; } }
+
+  .hero { position: relative; padding: 64px 0 0; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -220px 0 auto; height: 560px; z-index: -1;
+    background:
+      radial-gradient(720px 340px at 22% 12%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(620px 320px at 82% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-inner { text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    padding: 5px 14px 5px 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--seal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent);
+  }
+  .hero h1 { margin: 26px auto 0; max-width: 26ch; font-size: clamp(1.9rem, 5.2vw, 3rem); letter-spacing: -.04em; }
+  .hero .lede { margin: 22px auto 0; max-width: 66ch; font-size: 16px; color: var(--fg-soft); }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15px; font-weight: 600; line-height: 1;
+    padding: 14px 24px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn svg { width: 17px; height: 17px; flex: none; }
+  .btn--primary {
+    background: var(--accent); color: var(--accent-fg);
+    box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px color-mix(in srgb, var(--accent) 90%, transparent); }
+  .btn--ghost { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+  .btn--ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+  .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hero .note b { font-weight: 600; color: var(--fg-soft); }
+
+  .shot {
+    margin: 0; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  }
+  .shot img { width: 100%; }
+  .shot__bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-soft) 70%, var(--surface));
+  }
+  .shot__bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+  .shot__bar span {
+    margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .hero .shot { margin-top: 46px; }
+
+  .section { padding: 84px 0; }
+  .section--soft { background: var(--bg-soft); border-block: 1px solid var(--border); }
+  .eyebrow2 {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: .18em;
+    color: var(--seal); text-transform: uppercase;
+  }
+  .eyebrow2::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(to right, color-mix(in srgb, var(--seal) 40%, transparent), transparent);
+  }
+  .section h2 { margin-top: 20px; font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
+  .section .sub { margin-top: 14px; max-width: 68ch; color: var(--muted); font-size: 15.5px; }
+  .section .sub + .sub { margin-top: 10px; }
+  .section .sub b { color: var(--fg-soft); }
+
+  .grid { display: grid; gap: 14px; margin-top: 38px; }
+  .grid--feats { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid--wide { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .card h3 { font-size: 16px; }
+  .card p { margin-top: 12px; font-size: 14.5px; color: var(--fg-soft); }
+  .card p + p { margin-top: 8px; }
+  .card .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; font-size: 17px;
+  }
+
+  /* ── Comparison table ───────────────────── */
+  .compare { margin-top: 38px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .compare th, .compare td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .compare thead th { background: var(--bg-soft); font-size: 13.5px; }
+  .compare thead th:last-child { color: var(--accent); }
+  .compare tbody tr:last-child td { border-bottom: 0; }
+  .compare td:first-child { color: var(--muted); font-size: 13.5px; white-space: nowrap; }
+  .compare td { color: var(--fg-soft); }
+  .compare td b { color: var(--fg); }
+  @media (max-width: 700px) {
+    .compare { border: 0; background: none; box-shadow: none; }
+    .compare table, .compare tbody, .compare tr, .compare td { display: block; width: 100%; }
+    .compare thead { display: none; }
+    .compare tbody tr { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; padding: 6px 0; box-shadow: var(--shadow-sm); }
+    .compare td { border: 0; padding: 8px 18px; }
+    .compare td:first-child { font-weight: 600; color: var(--seal); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+    .compare td::before { content: attr(data-col) ": "; color: var(--muted); font-size: 12.5px; }
+  }
+
+  /* ── Step-by-step walkthrough ───────────── */
+  .walk { margin-top: 56px; display: grid; gap: 26px; }
+  .walk:first-of-type { margin-top: 40px; }
+  .walk__head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .walk__num {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 32%, var(--border)); border-radius: 999px;
+    padding: 3px 11px; flex: none;
+  }
+  .walk__head h3 { font-size: clamp(1.15rem, 2.4vw, 1.4rem); }
+  .walk__body { margin-top: 14px; display: grid; grid-template-columns: 1fr 1.35fr; gap: 40px; align-items: start; }
+  @media (max-width: 900px) { .walk__body { grid-template-columns: 1fr; gap: 22px; } }
+  .walk__body--stack { grid-template-columns: 1fr; }
+  .walk__text p { font-size: 15px; color: var(--fg-soft); }
+  .walk__text p + p { margin-top: 12px; }
+  .walk__text b { color: var(--fg); }
+  .figs { display: grid; gap: 16px; }
+  .figs--2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 700px) { .figs--2 { grid-template-columns: 1fr; } }
+  .fig { margin: 0; }
+  .fig--tall img { max-height: 620px; width: auto; margin-inline: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; counter-reset: step; }
+  @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 22px 24px; box-shadow: var(--shadow-sm);
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--seal);
+    display: block; margin-bottom: 12px;
+  }
+  .step h3 { font-size: 15.5px; }
+  .step p { margin-top: 10px; font-size: 14px; color: var(--fg-soft); }
+  .step code { word-break: break-all; }
+
+  .callout {
+    margin-top: 28px; display: flex; gap: 14px; align-items: flex-start;
+    background: color-mix(in srgb, var(--seal) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--seal) 22%, var(--border));
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .callout .k {
+    flex: none; font-size: 12px; font-weight: 700; color: var(--seal);
+    border: 1px solid color-mix(in srgb, var(--seal) 35%, transparent);
+    border-radius: 8px; padding: 3px 9px; letter-spacing: .06em;
+  }
+  .callout p { font-size: 14px; color: var(--fg-soft); }
+  .callout p b { color: var(--fg); }
+
+  .faq { margin-top: 38px; border-top: 1px solid var(--border); }
+  details { border-bottom: 1px solid var(--border); }
+  summary {
+    cursor: pointer; list-style: none; padding: 22px 44px 22px 0; position: relative;
+    font-size: 16px; font-weight: 600; transition: color .2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary::after {
+    content: ""; position: absolute; right: 8px; top: 50%;
+    width: 9px; height: 9px; margin-top: -7px;
+    border-right: 1.6px solid var(--muted); border-bottom: 1.6px solid var(--muted);
+    transform: rotate(45deg); transition: transform .25s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  details .answer { padding: 0 0 24px; font-size: 14.5px; color: var(--fg-soft); max-width: 78ch; }
+  details .answer p + p { margin-top: 10px; }
+  details .answer a { color: var(--accent); }
+  details .answer a:hover { text-decoration: underline; }
+
+  .final { text-align: center; padding: 92px 0 84px; }
+  .final img { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 26px; box-shadow: var(--shadow-sm); }
+  .final h2 { font-size: clamp(1.7rem, 4.2vw, 2.4rem); }
+  .final .tagline { margin: 18px auto 0; max-width: 48ch; color: var(--fg-soft); }
+  .final .cta { margin-top: 30px; }
+  .final .more { margin-top: 18px; font-size: 13.5px; color: var(--muted); }
+  .final .more a { color: var(--accent); }
+  .final .more a:hover { text-decoration: underline; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--fg-soft); border-bottom: 1px solid transparent; transition: border-color .2s ease, color .2s ease; }
+  footer a:hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  footer .push { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="./index.en.html">
+      <img src="assets/icon-128.png" alt="">
+      <span>Shunshou</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="./index.en.html">Home</a>
+      <a class="nav-link" href="./use-case-siyuan.en.html">SiYuan use case</a>
+      <a class="nav-link" href="./use-case-orca.en.html">Orca Note use case</a>
+      <a class="nav-link" href="./use-case-share-cards.en.html">Share images</a>
+      <a class="nav-link" href="./use-case-obsidian.en.html">Obsidian use case</a>
+      <a class="nav-link" href="./use-case-instagram.en.html">Instagram use case</a>
+      <a class="nav-lang" href="./use-case-siyuan.html" hreflang="zh-CN">中文</a>
+      <a class="nav-cta" href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>Use case · SiYuan</p>
+        <h1>SiYuan clipping: let AI read a page's structure once, then reuse the rule forever</h1>
+        <p class="lede">
+          SiYuan's own clipper already does its job well: one click sends the whole page or your selection into
+          SiYuan with images localized. What Shunshou adds is <b>keeping the recipe</b> — tell the AI "clip LD246's
+          article and comments into SiYuan", and it reads the page structure once and saves the recipe as a
+          <b>rule</b>. Every later page of the same kind reuses it, with no model call and no token cost.
+          Douban books, movies and games, and web highlights, all follow the same path.
+        </p>
+        <div class="cta">
+          <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+          </a>
+          <a class="btn btn--ghost" href="#install">Other ways to install</a>
+        </div>
+        <p class="note"><b>No account</b> · <b>No server</b> · content goes only to the SiYuan kernel you enter</p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot__bar"><i></i><i></i><i></i><span>The AI reading this page's structure: every node it inspected and every field it verified</span></div>
+        <img src="assets/siyuan/image-9iipgwypvrd21.webp" width="1600" height="1064" alt="Shunshou's AI page listing each step: read the page structure (966 elements), inspected node e414, verified the article selector, verified the comments selector, and finally handed over 11 fields">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Difference -->
+  <section class="section" id="difference">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">The difference</p>
+        <h2>"This clip came out clean" and "the way it was clipped is kept" are two different things</h2>
+        <p class="sub">
+          SiYuan's official clipper does one thing very clearly: one click sends the whole page or your selection
+          into SiYuan, localizing images along the way, and it keeps getting better. Shunshou doesn't compete on
+          that — the official one is about <b>getting this page in</b>; Shunshou is about whether <b>the way this
+          kind of page gets clipped can be kept</b>.
+        </p>
+        <p class="sub">
+          The difference is whether the judgement "where is the article, how are the comments shaped" is saved:
+          the official clipper works it out again every time, while Shunshou <b>settles it into an editable,
+          exportable, reusable rule</b> — so the second time and the hundredth time are free, and you can see
+          which node each field came from and what value it actually resolved to.
+        </p>
+      </div>
+
+      <div class="compare">
+        <table>
+          <thead>
+            <tr>
+              <th>Concern</th>
+              <th>The official SiYuan clipper</th>
+              <th>Shunshou</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Basic clipping</td>
+              <td data-col="Official">One-click full page / selection into SiYuan, images localized, shortcut <kbd>Ctrl/⌘+Shift+S</kbd></td>
+              <td data-col="Shunshou">The same, plus selection excerpts, all-highlights-in-one-go, and batch staging</td>
+            </tr>
+            <tr>
+              <td>When the article is wrong</td>
+              <td data-col="Official">Follows the extension's own article detection</td>
+              <td data-col="Shunshou"><b>Pick the container on the page</b> and save it as a rule; or let AI read the structure and offer candidates you can <b>preview for free</b></td>
+            </tr>
+            <tr>
+              <td>Is the recipe kept?</td>
+              <td data-col="Official">Re-detected each time; the recipe isn't stored</td>
+              <td data-col="Shunshou">Saved as a <b>rule</b>: editable, exportable, reusable — and it shows which node each field came from and what value it resolved to</td>
+            </tr>
+            <tr>
+              <td>What AI is for</td>
+              <td data-col="Official">—</td>
+              <td data-col="Shunshou"><b>AI generates the rule, not the content</b>: read the structure once → save the rule → every later clip extracts locally with no model call</td>
+            </tr>
+            <tr>
+              <td>Comments and threads</td>
+              <td data-col="Official">A full-page clip brings avatars and like buttons along</td>
+              <td data-col="Shunshou">A <b>list primitive</b>: mark each comment's container, take author / time / body per item, so clutter never enters the output</td>
+            </tr>
+            <tr>
+              <td>Metadata → database</td>
+              <td data-col="Official">Supports clipping to a database (as a row)</td>
+              <td data-col="Shunshou">Also supported, and <b>field by field</b>: name / rating / developer / link each come from their own node, with <b>missing columns created</b> and primary-key dedupe before writing</td>
+            </tr>
+            <tr>
+              <td>Web highlights</td>
+              <td data-col="Official">—</td>
+              <td data-col="Shunshou">Highlight a selection, it stays on the page across reloads, and all highlights can be <b>saved to SiYuan at once</b></td>
+            </tr>
+            <tr>
+              <td>Douban books / movies / games</td>
+              <td data-col="Official">Full-page clip (metadata ends up inside the text)</td>
+              <td data-col="Shunshou"><b>Field by field</b> (17 / 20 / 11 fields) straight into database columns, with covers localized so they don't break</td>
+            </tr>
+            <tr>
+              <td>Multiple destinations</td>
+              <td data-col="Official">SiYuan (notebook / database)</td>
+              <td data-col="Shunshou">SiYuan's four targets, plus Orca, Obsidian and local Markdown from the same config — and an <b>action chain</b> can write to several at once</td>
+            </tr>
+            <tr>
+              <td>Auto-run</td>
+              <td data-col="Official">—</td>
+              <td data-col="Shunshou">Run automatically on matching pages (off by default, enabled per action, with an optional confirmation)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="k">Together</span>
+        <p>
+          <b>You can run both at once.</b> Both write into the same workspace through the SiYuan kernel's HTTP API,
+          so they don't interfere. Their shortcuts don't collide either: the official one uses
+          <kbd>Ctrl/⌘+Shift+C</kbd> (copy selection) and <kbd>Ctrl/⌘+Shift+S</kbd> (clip page), while Shunshou
+          defaults to <kbd>Ctrl/⌘+Shift+K</kbd> (command palette).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example 1 -->
+  <section class="section section--soft" id="example-thread">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Example 1 · Article + comments</p>
+        <h2>Clipping an LD246 thread — article and comments — into SiYuan</h2>
+        <p class="sub">
+          The hard part on pages like this isn't the article, it's the comments: avatars, like counts and
+          "1 reply" all mixed in with the text. One sentence says what you want; AI works out the structure.
+        </p>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 01</span>
+          <h3>One sentence describing the outcome you want</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>Type plain language into the intent box on the Studio's AI page — no selectors, and no need to know what the page looks like inside:</p>
+            <p><b>"Clip LD246's article and comments into SiYuan."</b></p>
+            <p>It also picks up the implicit requirements, like "comments should be their own blocks with author and time", because it can see which elements exist and what each one says.</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>One sentence → a generated config</span></div>
+                <img src="assets/siyuan/image-axlioigro53o5.webp" width="1600" height="1056" loading="lazy" alt="The Studio's AI page: an intent box containing a one-sentence request, with a generated config preview below it">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 02</span>
+          <h3>AI reads the page and verifies every field before writing the config</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>It first reads this page (how many elements, what the structure looks like), then <b>verifies field by field</b>: what each one actually resolves to. Only what passes gets written into the config.</p>
+            <p>So you don't get "looks right in the preview, empty when it runs". And the process is visible — every line says which node it inspected or which field it verified and what value came back.</p>
+            <p><b>This is the key part:</b> what comes out of that run isn't a piece of content, it's a <b>rule</b>. The rule is saved into your config, and every later clip extracts locally by rule — no model call, no tokens.</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>Read structure → verify fields → hand over the config</span></div>
+                <img src="assets/siyuan/image-9iipgwypvrd21.webp" width="1600" height="1064" loading="lazy" alt="The AI structure-reading log: read the page structure (966 elements), inspected several nodes, verified the article and comments selectors against real values, and finally handed over 11 fields">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 03</span>
+          <h3>From then on, one click — and the comments are clean</h3>
+        </div>
+        <div class="walk__body walk__body--stack">
+          <div class="walk__text">
+            <p>Once the rule is live, a page of the same kind is one click. Below is a V2EX thread clipped: the article on top, comments as their own blocks with author and time, and no avatars or buttons dragged along.</p>
+          </div>
+          <div class="figs figs--2">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>V2EX thread: article + comments, clipped clean</span></div>
+                <img src="assets/siyuan/image-z6jkpri8ii5i1.webp" width="1600" height="1046" loading="lazy" alt="The clipped result in SiYuan: several paragraphs of article, then an All comments section where each comment is a clean list item with username, time and text — no avatars or buttons">
+              </div>
+            </figure>
+            <figure class="fig fig--tall">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>An LD246 thread clipped into SiYuan</span></div>
+                <img src="assets/siyuan/image-qos80jt64jj93.webp" width="1600" height="2619" loading="lazy" alt="The clipped LD246 thread in SiYuan: title, source link, author and publish time, then the article body with a code block, then a comments section">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example 2 -->
+  <section class="section" id="example-database">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Example 2 · Metadata → database</p>
+        <h2>Collecting App Store apps into a SiYuan database</h2>
+        <p class="sub">
+          Clipping keeps a copy; a database accumulates a collection. To turn a pile of apps into a table with
+          name, rating, developer, link and icon, creating the columns and copying the values by hand is
+          miserable — and this is exactly where "let AI learn the rule once" pays off most.
+        </p>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 01</span>
+          <h3>One sentence: save this page into a SiYuan database</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>Open the Studio on the App Store page and type a sentence like "<b>save apps I want to install into SiYuan</b>". Because it runs inside the page, it attaches a structural summary of what's on it — so the selectors it generates are <b>verified against this page first</b>.</p>
+            <p>You don't have to decide up front which fields you want. It can tell what this page offers and proposes the fields it can actually reach: app name, rating, developer, link, icon.</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>In-page Studio · generate from one sentence</span></div>
+                <img src="assets/siyuan/image-7d2c3nmhqkxdk.webp" width="1600" height="1059" loading="lazy" alt="Shunshou's Studio opened inside an App Store page, with a one-sentence intent typed into the box">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 02</span>
+          <h3>Several possible values for one field? You pick</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>A field often has more than one way to read it (a rating might resolve to <code>4.3</code> or to <code>4.3 stars</code>). All candidates are laid out with the recommended one marked, and you can <b>switch to another with one click</b>.</p>
+            <p>If none is right, click "<b>none of these, I'll point</b>" and pick the spot on the page — the field is filled in. Fields it can't reach are never hard-coded into the config.</p>
+            <p>Each candidate also shows <b>how it was found</b> (landmark / parent node / absolute structural path), not just a value to eyeball.</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>Multiple candidates: switch, or point at it yourself</span></div>
+                <img src="assets/siyuan/image-gcq04jd4qblii.webp" width="1600" height="1062" loading="lazy" alt="Generated results where each field offers several candidate value cards marked Recommended with how each was found, plus a none-of-these-I'll-point button">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 03</span>
+          <h3>The column scheme is generated, missing columns are created</h3>
+        </div>
+        <div class="walk__body">
+          <div class="walk__text">
+            <p>The generated action already has its columns configured: rating (text), developer (text), link (link), icon (asset), app name (as defined by the database).</p>
+            <p>All you do is pick <b>which database to write to</b> — the dropdown lists the databases in your workspace with their paths, so there's no ID to copy by hand. Missing columns are created on write, with the types from the scheme.</p>
+          </div>
+          <div class="figs figs--2">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>Column scheme: field → column, type selectable</span></div>
+                <img src="assets/siyuan/image-kdw7m1xw8sv30.webp" width="1600" height="1068" loading="lazy" alt="The generated action's parameters: a SiYuan connection and a column scheme listing rating, developer, link, icon and app name, each bound to a field and a column type">
+              </div>
+            </figure>
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>Pick a database: listed with paths, no ID to copy</span></div>
+                <img src="assets/siyuan/image-od7fsb8np0j7h.webp" width="1600" height="1062" loading="lazy" alt="The database dropdown listing databases in the workspace with their notebook and path, above the primary key field and column scheme">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="walk">
+        <div class="walk__head">
+          <span class="walk__num">STEP 04</span>
+          <h3>From then on, one click per app</h3>
+        </div>
+        <div class="walk__body walk__body--stack">
+          <div class="walk__text">
+            <p>Once the rule runs, collecting an app becomes "see it → click once". Name, link, developer and rating are filled in automatically, and icons are stored in the SiYuan asset library so they don't break.</p>
+          </div>
+          <div class="figs">
+            <figure class="fig">
+              <div class="shot">
+                <div class="shot__bar"><i></i><i></i><i></i><span>A SiYuan database: name / link / developer / rating</span></div>
+                <img src="assets/siyuan/image-1masulhlhb1wv.webp" width="1600" height="440" loading="lazy" alt="A SiYuan database table whose columns are app name, link, developer, rating and primary key, already holding two rows of app data">
+              </div>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Douban -->
+  <section class="section" id="douban">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">The everyday one · Douban</p>
+        <h2>Douban books, movies and games, straight into a SiYuan database</h2>
+        <p class="sub">
+          This is structured collecting at its purest: the page already states the title, author, rating and cover,
+          yet turning them into database columns used to mean reading and typing at the same time. Shunshou reads
+          the whole page's fields directly — <b>17 for a book, 20 for a movie (movies and TV series share the set),
+          11 for a game</b>.
+        </p>
+        <p class="sub">
+          And no AI is needed here: Douban is a built-in <b>system variable group</b>, ready out of the box. Want
+          different fields? Click "override" and edit — by default it applies to Douban only, and other sites fall
+          back to the system version.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">📖</span>
+          <h3>Books · 17 fields</h3>
+          <p>Title, author, translator, producer, subtitle, original title, publisher, publication year, page count, price, binding, ISBN, rating, rating count, Douban ID, link…</p>
+          <p>The title becomes the primary key and the rest become columns — <b>missing columns are created</b>, typed by the scheme (publication year = date, pages / rating / rating count = number).</p>
+        </article>
+        <article class="card">
+          <span class="mark">🎬</span>
+          <h3>Movies / TV · 20 fields</h3>
+          <p>Title, year, form, director, cast, genre, country, release date, runtime, episode count, synopsis, rating, rating count, comment, cover, Douban ID, link…</p>
+          <p>Movies and TV series <b>share one field set</b>, so there's nothing separate to configure; "form" and "episode count" tell you which it is.</p>
+        </article>
+        <article class="card">
+          <span class="mark">🎮</span>
+          <h3>Games · 11 fields</h3>
+          <p>Title, genre, platform, aliases, developer, publisher, release date, comment, cover, Douban ID, link.</p>
+        </article>
+        <article class="card">
+          <span class="mark">▣</span>
+          <h3>Covers that don't break</h3>
+          <p>Douban's images are hotlink-protected, so pasting the link into SiYuan turns into broken images within days. Here they're <b>downloaded and uploaded to the SiYuan asset library</b> by default, so the database shows real thumbnails that survive a machine change or going offline.</p>
+          <p>Switch to "keep original link" if you'd rather not keep local copies.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⊜</span>
+          <h3>Duplicates are checked first</h3>
+          <p>Dedupe is by primary key content (book or film title), exact match only. On a hit it asks you to update, skip or create — <b>skipping is the default</b>, protecting cells you edited by hand.</p>
+        </article>
+        <article class="card">
+          <span class="mark">↻</span>
+          <h3>Browse and it's filed</h3>
+          <p>Set "Save as book (SiYuan)" on Douban pages to <b>auto-run</b>: open a book page and it's filed, no click at all. Off by default, enabled per action, and it can be set to ask before writing.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Two destinations</span>
+        <p>
+          The same fields also go to <b>Orca</b> — both "Save as book" and "Save as book (SiYuan)" ship out of the
+          box. Want both libraries populated? Chain them with an <b>action chain</b>: one click, one Orca note and
+          one SiYuan row.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlights -->
+  <section class="section section--soft" id="highlight">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Mark as you read</p>
+        <h2>Web highlights: mark on the page, save to SiYuan in one go</h2>
+        <p class="sub">
+          The trouble with excerpts is that tidying up comes after reading, and while reading you rarely want to
+          switch windows. Shunshou leaves the mark on the page instead: select a passage, click <b>Highlight</b>,
+          and it stays there — <b>through reloads and across sessions</b>.
+        </p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <span class="mark">✎</span>
+          <h3>On the page, without changing the page</h3>
+          <p>Highlights are laid over the original text and <b>don't modify the site's own DOM</b> — nothing gets scrambled, and nobody else's site gets broken.</p>
+          <p>They're stored locally and don't travel with export or sync. On Safari, many highlights on one page can get slow; the cap is 200 per page.</p>
+        </article>
+        <article class="card">
+          <span class="mark">☑</span>
+          <h3>Editable, removable, undoable</h3>
+          <p>Click a highlighted passage again to "copy this one" or "remove this one" — and <b>a removal can be undone</b>, so a stray click doesn't cost you anything.</p>
+        </article>
+        <article class="card">
+          <span class="mark">⇥</span>
+          <h3>Done reading, save them all</h3>
+          <p>After marking your way through a page, one "Save highlights (SiYuan)" writes them all into SiYuan (empty target = today's daily note), one passage per block, cleanly.</p>
+          <p>You can also copy them as text, or reference <code>{{highlights}}</code> in any template.</p>
+        </article>
+        <article class="card">
+          <span class="mark">◇</span>
+          <h3>Works with excerpts and staging</h3>
+          <p>Three granularities, three jobs: <b>highlight</b> leaves a mark to review later, <b>excerpt</b> sends that one passage to today's note now, and <b>staging</b> collects several to save together. All three land in SiYuan.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="section section--soft" id="setup">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Setup</p>
+        <h2>Three steps to connect your SiYuan</h2>
+        <p class="sub">No SiYuan plugin to install. Shunshou talks to the kernel's own HTTP API — SiYuan just needs to be running.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Get an API token</h3>
+          <p>Open SiYuan → Settings → About → API token, and copy it.</p>
+        </article>
+        <article class="step">
+          <h3>Add a SiYuan connection</h3>
+          <p>In Shunshou's Connections page, add a SiYuan connection with the kernel address (default <code>http://127.0.0.1:6806</code>) and the token, then hit Test — it tells you which SiYuan version it reached and how many notebooks and databases you have.</p>
+        </article>
+        <article class="step">
+          <h3>Pick a destination for the action</h3>
+          <p>Go back to the action and choose where it lands: a database row, today's daily note, a specific document, or a document database. Configured and live immediately; a mistake is one undo away.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Note</span>
+        <p>
+          Once the connection is configured, <b>the "save to SiYuan" actions appear where they belong</b>. Before that they
+          sit in the "not configured" section at the bottom of the panel, so they never take up a slot you might click by mistake.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Other scenes -->
+  <section class="section" id="scenes">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Other scenes</p>
+        <h2>Once it's connected, there's more it can do</h2>
+        <p class="sub">These all ship out of the box and are clickable as soon as the connection is set up. Fields, templates and cleaning rules for each are edited visually in the Studio.</p>
+      </div>
+
+      <div class="grid grid--wide">
+        <article class="card">
+          <h3>Selected highlight → today's daily note</h3>
+          <p>Select a passage and click "Excerpt to daily note" on the capsule; it's appended to that day's note — and <b>the note is created if it doesn't exist</b>.</p>
+          <p>You can also target a fixed document (created if missing) and choose to insert at the end or the beginning. Read it, keep it, never leave the page.</p>
+        </article>
+        <article class="card">
+          <h3>New document into a database</h3>
+          <p>Create the content as a SiYuan document and <b>bind</b> it into the chosen database — either following the database's own item template or a custom save path such as <code>/Collection/{{dateText}}/{{title}}</code>.</p>
+          <p>There's also an AI-summary variant that summarizes the page into structured text first.</p>
+        </article>
+        <article class="card">
+          <h3>Save a translated page</h3>
+          <p>A whole foreign article is translated with <b>your browser's built-in on-device translation</b> (desktop Chrome / Edge 138+) — zero configuration, no cost, and <b>the text never leaves your machine</b>.</p>
+          <p>The translation is <b>shown in a bubble first</b>; only when you click "Save to SiYuan" is anything written.</p>
+        </article>
+        <article class="card">
+          <h3>Collect a few, save them together</h3>
+          <p>Click "Add to staged" on each passage you like, then save <b>the whole batch to SiYuan at once</b> from the staged area at the top of the orb panel. A count badge on the orb reminds you how many are still waiting.</p>
+        </article>
+        <article class="card">
+          <h3>Line breaks, SiYuan semantics</h3>
+          <p>Per action you can decide how line breaks are treated: single breaks as paragraphs, 1 or 2 breaks between paragraphs (<b>SiYuan semantics: 1 = line break inside a block, 2 = new block</b>), or collapse consecutive blank lines.</p>
+        </article>
+        <article class="card">
+          <h3>Image lists inside the text</h3>
+          <p>When a template references <code>{{page.images}}</code> or <code>{{field.*.images}}</code>, add the <code>:md</code> hint and it renders as Markdown images and gets localized into the SiYuan asset library along with the text — no hand-written <code>![](...)</code>.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Combinations -->
+  <section class="section section--soft" id="combo">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Combines with</p>
+        <h2>It isn't an isolated "clip button"</h2>
+        <p class="sub">The SiYuan destination is one link in the toolbox — it can follow another action, or run on its own.</p>
+      </div>
+
+      <div class="grid grid--feats">
+        <article class="card">
+          <h3>Both libraries at once (action chains)</h3>
+          <p>An action can carry "then do" steps: save an Orca bookmark, then write a SiYuan database row — <b>one click, both libraries populated</b>. Steps run in order, stop at the first failure, and share one extraction of the page.</p>
+        </article>
+        <article class="card">
+          <h3>See it, log it (auto-run)</h3>
+          <p>Douban book / movie / game pages can be set to auto-run "Save as book (SiYuan)" the moment you open them — browse and it's filed, no click at all. Off by default, enabled per action, and it can ask you first.</p>
+        </article>
+        <article class="card">
+          <h3>Higher-fidelity article</h3>
+          <p>When the destination is SiYuan the article switches to <b>SiYuan's own converter</b> (better fidelity than the built-in one): headings, merged table cells and code blocks all come through. Clipping itself keeps links, emphasis and formulas (as <code>$…$</code> / <code>$$…$$</code>).</p>
+        </article>
+        <article class="card">
+          <h3>Rules can be shared</h3>
+          <p>A finished article rule can be exported as a rule pack and sent to someone else; a whole scene exports as <code>.action-pack.json</code>. They get the same recipe without having to have AI work it out again.</p>
+        </article>
+        <article class="card">
+          <h3>Point at it yourself when it's wrong</h3>
+          <p>Bad article? Pick the container on the page (multi-select merges, Enter finishes), then "Save as rule" to promote it to a lasting rule — no AI required at any point if you'd rather do it by hand.</p>
+        </article>
+        <article class="card">
+          <h3>Do it all without AI</h3>
+          <p>Nothing here requires a model connection. Douban and the other built-in rules work out of the box, and picking containers yourself works offline — AI is only the shortcut for pages you don't want to point at.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">FAQ</p>
+        <h2>Questions about Shunshou + SiYuan</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>SiYuan already has an official clipper. Why use Shunshou?</summary>
+          <div class="answer">
+            <p>The official extension is good at "<b>clipping this one page well</b>": one-click full page or selection, images localized, and it keeps improving.</p>
+            <p>What Shunshou adds is "<b>turning the recipe into a rule</b>": AI reads the page structure once and saves where the article is, how comments are shaped and which node each field comes from as a reusable rule. Every later page of the same kind is one click with <b>no model call and no token cost</b>. Comment threads and structured "metadata → database" collecting are where it earns its keep.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does it conflict with the official SiYuan clipper?</summary>
+          <div class="answer">
+            <p>No, <b>you can run both</b>. Both write into the same workspace through the SiYuan kernel's HTTP API, so they don't interfere.</p>
+            <p>Their shortcuts differ too: the official one uses <kbd>Ctrl/⌘+Shift+C</kbd> (copy selection) and <kbd>Ctrl/⌘+Shift+S</kbd> (clip page), while Shunshou defaults to <kbd>Ctrl/⌘+Shift+K</kbd> (command palette).</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does generating rules with AI cost money on every clip?</summary>
+          <div class="answer">
+            <p>No. AI runs only once, during the "<b>read the page structure</b>" step, and what it produces is a rule (selectors and field recipes), <b>not content</b>. Once the rule is saved to your config, every later clip extracts locally by rule — no model call, no tokens, and it works offline.</p>
+            <p>You can skip AI entirely, too: pick the container yourself on the page and "Save as rule". Same result, just a few more clicks from you.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can Douban books, movies and games go straight into a SiYuan database?</summary>
+          <div class="answer">
+            <p>Yes. A book page yields <b>17</b> fields, a movie page <b>20</b> (movies and TV series share the same set) and a game page <b>11</b>. One click writes them into the database you pick, with <b>missing columns created automatically</b> and types from the scheme.</p>
+            <p>Cover images are <b>downloaded and then uploaded to the SiYuan asset library</b>, so thumbnails show up in the database and keep working on another machine or offline. Rows are deduped by primary key before writing — skipping by default, which protects cells you edited by hand.</p>
+          </div>
+        </details>
+        <details>
+          <summary>What are web highlights, and can they be saved to SiYuan?</summary>
+          <div class="answer">
+            <p>Select a passage and click <b>Highlight</b>; the mark stays on the page, surviving a reload and <b>without changing the page's own structure</b>. Clicking a highlight again lets you copy or remove it, and a removal can be undone.</p>
+            <p>When you're done reading, every highlight on the page can be <b>saved to SiYuan in one go</b> (empty target = today's daily note), or copied as text. Highlights are stored locally and don't travel with export or sync.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can pages like comment threads be clipped cleanly?</summary>
+          <div class="answer">
+            <p>Yes. List-shaped structures use "<b>container + per-item subfields + per-item template</b>": mark the container for each comment, then take author, time and body per item, so avatars and like buttons never enter the output.</p>
+            <p>Article-plus-comments on communities like LD246 and V2EX clips into clean Markdown in one go, with a separator between items and an item cap (it tells you "N more not taken" when it hits it).</p>
+          </div>
+        </details>
+        <details>
+          <summary>Do I need to install a SiYuan plugin?</summary>
+          <div class="answer">
+            <p>No. Shunshou talks to SiYuan's own kernel HTTP API. As long as SiYuan is running, enter the kernel address (default <code>http://127.0.0.1:6806</code>) and an API token — no marketplace plugin required.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Will the same page get saved twice?</summary>
+          <div class="answer">
+            <p>Not by default. Before writing a database row it dedupes by primary key content and asks you to update, skip or create — <b>skipping is the default</b>, which protects cells you edited by hand. You can also set it to always skip or always create.</p>
+            <p>Document databases work the same way: on a name collision it asks whether to skip or create anyway.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does my content go through any third-party server?</summary>
+          <div class="answer">
+            <p>No. Content goes only to the SiYuan kernel address you entered — usually your own machine or LAN. Shunshou has no account system and no server; the author receives none of your data.</p>
+            <p>When AI reads a page structure, what leaves is only a <b>structural summary</b> of the page (elements and text), going to the model endpoint you configured yourself. And with "Save a translated page", the translation is done by your browser's built-in translation on your own machine, so that text doesn't leave it either.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section section--soft" id="install">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow2">Install</p>
+        <h2>Pick one and you're set</h2>
+        <p class="sub">The store versions update themselves; the userscript suits phones or anyone who'd rather not install an extension.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <h3>Chrome Web Store</h3>
+          <p>The default on desktop, and it updates itself.</p>
+          <p><a href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener" style="color:var(--accent)">Install from the Chrome Web Store →</a></p>
+        </article>
+        <article class="step">
+          <h3>Edge Add-ons</h3>
+          <p>Same engine as Chrome, same features.</p>
+          <p><a href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener" style="color:var(--accent)">Install from Edge Add-ons →</a></p>
+        </article>
+        <article class="step">
+          <h3>Userscript (works on mobile)</h3>
+          <p>Install a script manager first (Tampermonkey / Violentmonkey; Firefox on Android, Safari + Userscripts on iOS), then the script.</p>
+          <p><a href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js" style="color:var(--accent)">Install shunshou.user.js →</a></p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <span class="k">Manual</span>
+        <p>
+          To load the zip yourself (or if the stores aren't an option): download <code>shunshou-extension-*.zip</code> from
+          <a href="https://github.com/hqweay/shunshou/releases/latest" target="_blank" rel="noopener" style="color:var(--accent)">Releases</a>,
+          unzip it, then open <kbd>chrome://extensions</kbd>, turn on Developer mode and choose "Load unpacked".
+          The full walkthrough is on the <a href="./index.en.html#install" style="color:var(--accent)">home page's install section</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing -->
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon-128.png" alt="Shunshou">
+      <h2>Make this kind of page a one-click job, forever</h2>
+      <p class="tagline">Enter the kernel address and an API token; leave the rest to it.</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adnmpjgdmlhncmdfmfniippjefekdhfl" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from the Chrome Web Store
+        </a>
+        <a class="btn btn--ghost" href="https://microsoftedge.microsoft.com/addons/detail/elhiacffkdkpkcegafabljaldcoimich" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install from Edge Add-ons
+        </a>
+        <a class="btn btn--ghost" href="https://github.com/hqweay/shunshou/releases/latest/download/shunshou.user.js">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Install the userscript (mobile)
+        </a>
+      </div>
+      <p class="more">Or <a href="https://github.com/hqweay/shunshou/releases/latest">download the zip</a>, or see <a href="./index.en.html#install">every install option</a>.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Shunshou · Context-Aware Web Toolbox</span>
+    <a href="./index.en.html">Home</a>
+    <a href="./use-case-orca.en.html">Orca Note use case</a>
+    <a href="./use-case-share-cards.en.html">Share images</a>
+    <a href="./use-case-obsidian.en.html">Obsidian use case</a>
+    <a href="./use-case-instagram.en.html">Instagram use case</a>
+    <a href="https://github.com/hqweay/shunshou" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/hqweay/shunshou/blob/main/PRIVACY.en.md" target="_blank" rel="noopener">Privacy Policy</a>
+    <a href="https://github.com/hqweay/shunshou/issues" target="_blank" rel="noopener">Feedback</a>
+    <span class="push">Author: 养恐龙</span>
+  </div>
+</footer>
+
+</body>
+</html>
